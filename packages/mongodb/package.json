@@ -1,5 +1,5 @@
 {
-  "name": "sandbox",
+  "name": "mongodb",
   "module": "index.ts",
   "type": "module",
   "private": true,
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@types/express": "^5.0.6",
-    "@types/morgan": "^1.9.10",
+    "@types/mongoose": "^5.11.97",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "morgan": "^1.11.0"
+    "mongoose": "^9.7.4"
   }
 }
