@@ -13,6 +13,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@kubernetes/client-node": "^1.4.0",
     "@repo/mongodb": "workspace:*",
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.6",
