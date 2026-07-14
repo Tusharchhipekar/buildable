@@ -52,5 +52,6 @@ metadata:
 stringData: 
     SANDBOX_PORT: "3000"
     ROUTER_PORT: "4000"
+    AGENT_PORT: "5000"
 
 ---

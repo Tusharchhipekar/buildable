@@ -10,6 +10,22 @@
         "typescript": "5.9.2",
       },
     },
+    "apps/sandbox/agent": {
+      "name": "@repo/agent",
+      "dependencies": {
+        "@types/express": "^5.0.6",
+        "@types/morgan": "^1.9.10",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "morgan": "^1.11.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "apps/sandbox/router": {
       "name": "@repo/router",
       "dependencies": {
@@ -224,6 +240,8 @@
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.139.0", "", {}, "sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw=="],
+
+    "@repo/agent": ["@repo/agent@workspace:apps/sandbox/agent"],
 
     "@repo/eslint-config": ["@repo/eslint-config@workspace:packages/eslint-config"],
 
