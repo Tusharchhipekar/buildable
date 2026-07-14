@@ -1,4 +1,4 @@
-# sandbox
+# server
 
 To install dependencies:
 
