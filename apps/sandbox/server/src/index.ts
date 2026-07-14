@@ -29,6 +29,6 @@ app.post("/api/sandbox/start", async (req, res) => {
   });
 });
 
-app.listen(config.SERVER_PORT, () => {
-  console.log(`Server is running on http://localhost:${config.SERVER_PORT}`);
+app.listen(config.SANDBOX_PORT, () => {
+  console.log(`Server is running on http://localhost:${config.SANDBOX_PORT}`);
 });
