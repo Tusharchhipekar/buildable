@@ -1,4 +1,5 @@
 import { k8sCoreV1Api } from "./config.js";
+import { V1Volume } from "@kubernetes/client-node";
 
 export async function createPod(sandboxId: string) {
   const podManifest = {
@@ -10,6 +11,26 @@ export async function createPod(sandboxId: string) {
       },
     },
     spec: {
+      volumes: [
+        {
+          name: "workspace-volume",
+          emptyDir: {},
+        },
+      ],
+      initContainers: [
+        {
+          name: "init-container",
+          image: "template",
+          imagePullPolicy: "IfNotPresent",
+          command: ["sh", "-c", "cp -r /workspace/. /seed/"],
+          volumeMounts: [
+            {
+              name: "workspace-volume",
+              mountPath: "/seed",
+            },
+          ],
+        },
+      ],
       containers: [
         {
           image: "template",
@@ -31,6 +52,39 @@ export async function createPod(sandboxId: string) {
               memory: "500Mi",
             },
           },
+          volumeMounts: [
+            {
+              name: "workspace-volume",
+              mountPath: "/workspace",
+            },
+          ],
+        },
+        {
+          image: "agent",
+          imagePullPolicy: "IfNotPresent",
+          name: "agent-container",
+          ports: [
+            {
+              containerPort: 5000,
+              name: "http",
+            },
+          ],
+          resources: {
+            limits: {
+              cpu: "500m",
+              memory: "1Gi",
+            },
+            requests: {
+              cpu: "250m",
+              memory: "500Mi",
+            },
+          },
+          volumeMounts: [
+            {
+              name: "workspace-volume",
+              mountPath: "/workspace",
+            },
+          ],
         },
       ],
     },

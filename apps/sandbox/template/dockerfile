@@ -1,0 +1,13 @@
+FROM oven/bun:1
+
+WORKDIR /workspace
+
+COPY . .
+
+
+RUN bun install --frozen-lockfile
+
+
+EXPOSE 5173
+
+CMD ["bun", "--filter", "@repo/sandbox-template", "dev"]
