@@ -51,5 +51,6 @@ metadata:
   name: port
 stringData: 
     SANDBOX_PORT: "3000"
+    ROUTER_PORT: "4000"
 
 ---

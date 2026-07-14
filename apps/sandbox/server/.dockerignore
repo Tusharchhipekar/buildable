@@ -1,2 +1,11 @@
-.env
 node_modules
+**/node_modules
+.git
+.turbo
+**/.turbo
+docker
+.cursor
+.vscode
+.env
+.env.*
+!.env.example
