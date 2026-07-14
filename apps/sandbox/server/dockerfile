@@ -1,0 +1,11 @@
+FROM oven/bun:latest
+
+WORKDIR /app
+
+COPY . .
+
+RUN bun install --frozen-lockfile
+
+EXPOSE 3000
+
+CMD ["bun", "apps/sandbox/server/src/index.ts"]
