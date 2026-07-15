@@ -12,6 +12,14 @@ metadata:
     # Time in seconds to establish a connection to the pod
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "6000"
 
+    
+    # Session affinity: route same client to same backend pod using a cookie
+    # Ensures WebSocket / stateful connections don't switch pods mid-session
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+
+    # Name of the sticky session cookie sent to the client
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"
+
   labels:
     app.kubernetes.io/name: buildable-ingress
 spec:

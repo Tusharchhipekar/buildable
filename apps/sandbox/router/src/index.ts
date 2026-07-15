@@ -4,8 +4,9 @@ import {
   createProxyMiddleware,
   type RequestHandler,
 } from "http-proxy-middleware";
-
+import http from "http";
 import morgan from "morgan";
+import type { Socket } from "net";
 
 export const app = express();
 app.use(morgan("combined"));
@@ -68,6 +69,8 @@ app.use((req, res, next) => {
     return getAgentProxy(sandboxId!)(req, res, next);
   } else if (host?.split(".")[1] == "preview") {
     return getProxy(sandboxId!)(req, res, next);
+  } else {
+    next();
   }
 
   if (!sandboxId) {
@@ -75,11 +78,31 @@ app.use((req, res, next) => {
       .status(400)
       .json({ error: "Unable to resolve sandboxId from host" });
   }
-
-  return getProxy(sandboxId)(req, res, next);
 });
 
-app.listen(config.ROUTER_PORT, () => {
+export const server = http.createServer(app);
+
+server.on("upgrade", (req, socket, head) => {
+  const host = req.headers.host;
+  const sandboxId = host?.split(".")[0];
+  const type = host?.split(".")[1];
+
+  console.log(
+    `WS upgrade request: ${host}, sandboxId: ${sandboxId}, type: ${type}`,
+  );
+
+  if (type === "agent") {
+    const proxy = getAgentProxy(sandboxId!);
+    proxy.upgrade(req, socket as Socket, head);
+  } else if (type === "preview") {
+    const proxy = getProxy(sandboxId!);
+    proxy.upgrade(req, socket as Socket, head);
+  } else {
+    socket.destroy();
+  }
+});
+
+server.listen(config.ROUTER_PORT, () => {
   console.log(
     `sandbox router server is running at http://localhost:${config.ROUTER_PORT}`,
   );

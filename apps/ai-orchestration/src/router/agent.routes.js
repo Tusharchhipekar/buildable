@@ -6,6 +6,7 @@ const agentRouter = Router();
 agentRouter.post("/invoke", async (req, res) => {
   const { message, projectId } = req.body;
 
+  //added server side events
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",

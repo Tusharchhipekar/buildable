@@ -3,6 +3,11 @@ import morgan from "morgan";
 import fs from "fs";
 import path from "path";
 import { config } from "./config/config";
+import http from "http";
+import { Server } from "socket.io";
+import pty from "node-pty";
+import os from "os";
+
 const WORKSPACE_DIR = "/workspace";
 export const app = express();
 
@@ -10,10 +15,51 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const httpsServer = http.createServer(app);
+
+const io = new Server(httpsServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PATCH"],
+  },
+});
+
 app.get("/", (req, res) => {
   res.json({
     message: "Hello from sandbox agent",
     status: "ok",
+  });
+});
+
+const shell = "bash";
+
+// Spawn the PTY process
+const ptyProcess = pty.spawn(shell, [], {
+  name: "xterm-color",
+  cols: 80,
+  rows: 30,
+  cwd: "/workspace",
+  env: process.env,
+});
+
+ptyProcess.onData((data) => {
+  io.emit("terminal-output", data);
+});
+
+ptyProcess.onExit(({ exitCode, signal }) => {
+  console.log(`PTY process exited with code: ${exitCode}, signal: ${signal}`);
+});
+
+io.on("connection", (socket) => {
+  console.log("Client connected: ", socket.id);
+
+  socket.on("terminal-input", (data) => {
+    ptyProcess.write(data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:" + socket.id);
+    ptyProcess.kill();
   });
 });
 
@@ -194,6 +240,6 @@ app.post("/create-files", async (req, res) => {
   });
 });
 
-app.listen(config.AGENT_PORT, () => {
+httpsServer.listen(config.AGENT_PORT, () => {
   console.log(`Agent is running on port http://localhost:${config.AGENT_PORT}`);
 });
