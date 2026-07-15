@@ -8,7 +8,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/health", (req, res) => {
+app.get("/api/status/health", (req, res) => {
   res.status(200).json({
     message: "Hello from ai orchestration",
     status: "ok",
