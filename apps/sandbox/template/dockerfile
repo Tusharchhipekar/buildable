@@ -10,4 +10,4 @@ RUN bun install --frozen-lockfile
 
 EXPOSE 5173
 
-CMD ["bun", "--filter", "@repo/sandbox-template", "dev"]
+CMD ["bun", "--filter", "@repo/sandbox-template", "dev", "0.0.0.0"]

@@ -2,34 +2,56 @@ apiVersion: "skaffold/v4beta13"
 kind: Config
 
 build:
+  tagPolicy:
+    sha256: {}
+
+
   artifacts:
     - image: ai-orchestration
       context: .
       docker:
         dockerfile: apps/ai-orchestration/dockerfile
+      sync:
+       infer:
+        - "apps/ai-orchestration/src/**"
+        
 
     - image: agent
       context: .
       docker:
         dockerfile: apps/sandbox/agent/dockerfile
+      sync:
+        infer:
+          - "apps/sandbox/agent/src/**"
 
     - image: router
       context: .
       docker:
         dockerfile: apps/sandbox/router/dockerfile
-
+      sync:
+        infer:
+          - "apps/sandbox/router/src/**"
+          
     - image: sandbox
       context: .
       docker:
         dockerfile: apps/sandbox/server/dockerfile
-
+      sync:
+        infer:
+          - "apps/sandbox/server/src/**"
+          
     - image: template
       context: .
       docker:
         dockerfile: apps/sandbox/template/dockerfile
+      sync:
+        infer:
+          - "apps/sandbox/template/src/**"
 
 manifests:
   rawYaml:
+     - k8s/secret.yml
+     
      - k8s/ai-deployment.yml
      - k8s/ai-service.yml
 
@@ -42,3 +64,5 @@ manifests:
      - k8s/router-service.yml
 
      - k8s/rbac.yml
+
+     

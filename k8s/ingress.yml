@@ -14,9 +14,9 @@ spec:
         backend:
           service:
             name: sandbox-service
-            port: 
+            port:
               number: 80
-    
+
    - http:
       paths:
       - pathType: Prefix
@@ -24,28 +24,27 @@ spec:
         backend:
           service:
             name: ai-service
-            port: 
-              number: 80  
-
-   - host: "*.preview.localhost"
-     http: 
-      paths: 
-      - pathType: Prefix
-        path: "/"
-        backend:
-            service:
-              name: router-service
-            port: 
+            port:
               number: 80
 
-
-   - host: "*.agent.localhost"
-     http: 
-      paths: 
+   - host: "*.preview.localhost"
+     http:
+      paths:
       - pathType: Prefix
         path: "/"
         backend:
           service:
             name: router-service
-            port: 
-              number: 80                       
+            port:
+              number: 80
+
+   - host: "*.agent.localhost"
+     http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: router-service
+            port:
+              number: 80
