@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name:  ai-service
-  label: 
+  labels: 
    name:  ai-service
 spec:
   selector:

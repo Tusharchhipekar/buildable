@@ -36,6 +36,23 @@ spec:
             port: 3000
           initialDelaySeconds: 30
           timeoutSeconds: 10
+        env:
+          - name:  AI_PORT
+            valueFrom:
+              secretKeyRef:
+                name:  port
+                key:  AI_PORT
+          - name:  MISTRALAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name:  ai-secret
+                key:  MISTRALAI_API_KEY
+          
+          - name:  ANTHROPIC_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name:  ai-secret
+                key:  ANTHROPIC_API_KEY
         ports:
         - containerPort:  3000
           name:  ai-server-port
