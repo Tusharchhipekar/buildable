@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import { config } from "./config/config";
+import agentRouter from "./router/agent.routes";
 
 export const app = express();
 
@@ -14,6 +15,8 @@ app.get("/api/status/health", (req, res) => {
     status: "ok",
   });
 });
+
+app.use("/api/ai/agent", agentRouter);
 
 app.listen(config.AI_PORT, () => {
   console.log(
