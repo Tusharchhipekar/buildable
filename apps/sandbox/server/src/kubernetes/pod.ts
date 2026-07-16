@@ -6,7 +6,6 @@ export async function createPod(sandboxId: string) {
     metadata: {
       name: `sandbox-pod-${sandboxId}`,
       labels: {
-        app: "sandbox",
         sandboxId: sandboxId,
       },
     },
