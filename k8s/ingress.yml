@@ -20,6 +20,10 @@ metadata:
     # Name of the sticky session cookie sent to the client
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
 
+      # Cookie is valid for all paths under the domain
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+
+
   labels:
     app.kubernetes.io/name: buildable-ingress
 spec:

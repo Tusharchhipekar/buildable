@@ -1,122 +1,143 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useRef, useCallback } from "react";
+import SplashScreen from "./components/SplashScreen";
+import TopBar from "./components/TopBar";
+import FileExplorer from "./components/FileExplorer";
+import PreviewFrame from "./components/PreviewFrame";
+import FileViewer from "./components/FileViewer";
+import Terminal from "./components/Terminal";
+import AiChat from "./components/AiChat";
 
-function App() {
-  const [count, setCount] = useState(0)
+
+export default function App() {
+  // Sandbox state
+  const [sandbox, setSandbox] = useState(null); // { sandboxId, previewUrl, agentBase }
+  const [status, setStatus] = useState("ready");
+
+  // UI state
+  const [activeTab, setActiveTab] = useState("preview"); // 'preview' | 'files'
+  const [activeFile, setActiveFile] = useState(null);
+  const [fileRefreshKey, setFileRefreshKey] = useState(0);
+
+  // Terminal resize
+  const [terminalHeight, setTerminalHeight] = useState(220);
+  const isDragging = useRef(false);
+  const dragStartY = useRef(0);
+  const dragStartH = useRef(0);
+
+  const handleSandboxCreated = useCallback((data) => {
+    const agentBase = `http://${data.sandboxId}.agent.localhost`;
+    setSandbox({
+      sandboxId: data.sandboxId,
+      previewUrl: data.previewUrl,
+      agentBase,
+    });
+    setStatus("ready");
+  }, []);
+
+  const handleFilesChanged = useCallback(() => {
+    setFileRefreshKey((k) => k + 1);
+  }, []);
+
+  const handleFileSelect = useCallback((path) => {
+    setActiveFile(path);
+    setActiveTab("files");
+  }, []);
+
+  // Drag to resize terminal
+  const handleDragStart = (e) => {
+    isDragging.current = true;
+    dragStartY.current = e.clientY;
+    dragStartH.current = terminalHeight;
+
+    const onMove = (ev) => {
+      if (!isDragging.current) return;
+      const delta = dragStartY.current - ev.clientY;
+      const newH = Math.min(Math.max(dragStartH.current + delta, 80), 500);
+      setTerminalHeight(newH);
+    };
+    const onUp = () => {
+      isDragging.current = false;
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
+  // Landing / splash
+  if (!sandbox) {
+    return <SplashScreen onSandboxCreated={handleSandboxCreated} />;
+  }
+
+  const { sandboxId, previewUrl, agentBase } = sandbox;
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div
+      className="flex flex-col h-full w-full overflow-hidden"
+      style={{ background: "#070b14" }}
+    >
+      {/* Top bar */}
+      <TopBar
+        sandboxId={sandboxId}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        status={status}
+      />
 
-      <div className="ticks"></div>
+      {/* Main layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* File Explorer sidebar */}
+        <FileExplorer
+          agentBase={agentBase}
+          activeFile={activeFile}
+          onFileSelect={handleFileSelect}
+          refreshKey={fileRefreshKey}
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        {/* Center — main content + terminal */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Main content area */}
+          <div className="flex-1 overflow-hidden">
+            {activeTab === "preview" ? (
+              <PreviewFrame previewUrl={previewUrl} />
+            ) : (
+              <FileViewer agentBase={agentBase} filePath={activeFile} />
+            )}
+          </div>
+
+          {/* Drag handle */}
+          <div
+            className="shrink-0 flex items-center justify-center cursor-row-resize select-none"
+            style={{
+              height: "6px",
+              background: "#0d1424",
+              borderTop: "1px solid #1e2d45",
+              borderBottom: "1px solid #1e2d45",
+              zIndex: 10,
+            }}
+            onMouseDown={handleDragStart}
+            title="Drag to resize terminal"
+          >
+            <div
+              className="w-12 h-0.5 rounded-full"
+              style={{ background: "#2a3f60" }}
+            />
+          </div>
+
+          {/* Terminal */}
+          <div
+            className="shrink-0 overflow-hidden"
+            style={{ height: `${terminalHeight}px` }}
+          >
+            <Terminal sandboxId={sandboxId} />
+          </div>
+          </div>
+
+      {/* Right — AI Chat */}
+        <div className="shrink-0 overflow-hidden" style={{ width: "340px" }}>
+          <AiChat sandboxId={sandboxId} onFilesChanged={handleFilesChanged} />
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+      </div>
+    </div>
+  );
+};
