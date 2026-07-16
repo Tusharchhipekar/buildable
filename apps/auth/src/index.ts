@@ -8,6 +8,7 @@ import {
 } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import { config } from "./config/config"; // adjust to wherever GOOGLE_CLIENT_ID/SECRET live
+import { authRouter } from "./routes/auth.route";
 
 const app = express();
 
@@ -40,6 +41,8 @@ passport.use(
     },
   ),
 );
+
+app.use("/api/auth", authRouter);
 
 app.listen(config.AUTH_PORT, () => {
   console.log(
