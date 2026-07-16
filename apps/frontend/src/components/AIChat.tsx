@@ -1,5 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
+type ActivityType = "reading" | "updating" | "success" | "info";
+
+interface ActivityLine {
+  type: ActivityType;
+  text: string;
+}
+
+interface ChatMessage {
+  id?: number;
+  role: "user" | "assistant";
+  content: string;
+  activity: ActivityLine[];
+  time: number;
+  pending?: boolean;
+}
+
 function TypingIndicator() {
   return (
     <div className="flex items-center gap-1 px-3 py-2">
@@ -18,7 +34,7 @@ function TypingIndicator() {
   );
 }
 
-function ActivityLog({ lines }) {
+function ActivityLog({ lines }: { lines: ActivityLine[] }) {
   if (!lines.length) return null;
   return (
     <div
@@ -55,7 +71,7 @@ function ActivityLog({ lines }) {
   );
 }
 
-function Message({ msg }) {
+function Message({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === "user";
   return (
     <div
@@ -110,7 +126,7 @@ function Message({ msg }) {
   );
 }
 
-function parseActivityLine(line) {
+function parseActivityLine(line: string): ActivityLine | null {
   if (!line.trim()) return null;
   if (line.startsWith("Reading files")) return { type: "reading", text: line };
   if (line.startsWith("Updating files"))
@@ -120,20 +136,26 @@ function parseActivityLine(line) {
   return { type: "info", text: line };
 }
 
-export default function AiChat({ sandboxId, onFilesChanged }) {
-  const [messages, setMessages] = useState([
+interface AiChatProps {
+  sandboxId?: string | null;
+  onFilesChanged?: () => void;
+}
+
+export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
       content:
         "Hi! I can modify your sandbox project. Describe what you want to build or change, and I'll update the code for you.",
       activity: [],
+      // eslint-disable-next-line react-hooks/purity
       time: Date.now(),
     },
   ]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const bottomRef = useRef(null);
-  const textareaRef = useRef(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,7 +168,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
     setInput("");
     setStreaming(true);
 
-    const userMsg = {
+    const userMsg: ChatMessage = {
       role: "user",
       content: text,
       activity: [],
@@ -169,7 +191,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
     ]);
 
     let aiContent = "";
-    let activityLines = [];
+    let activityLines: ActivityLine[] = [];
 
     try {
       // Use fetch with SSE manually
@@ -180,6 +202,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
       });
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      if (!response.body) throw new Error("No response body");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -206,7 +229,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
-        buffer = lines.pop();
+        buffer = lines.pop() ?? "";
 
         for (const line of lines) {
           if (!line.trim()) continue;
@@ -246,12 +269,13 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
       // Trigger file explorer refresh
       onFilesChanged?.();
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       setMessages((prev) =>
         prev.map((m) =>
           m.id === aiMsgId
             ? {
                 ...m,
-                content: `Error: ${err.message}`,
+                content: `Error: ${message}`,
                 activity: activityLines,
                 pending: false,
               }
@@ -263,7 +287,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
     }
   }, [input, streaming, sandboxId, onFilesChanged]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -312,7 +336,7 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-4">
         {messages.map((msg, i) => (
-          <div key={msg.id || i}>
+          <div key={msg.id ?? i}>
             {msg.pending && !msg.content ? (
               <div className="flex justify-start">
                 <div
@@ -367,7 +391,9 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
           <textarea
             ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setInput(e.target.value)
+            }
             onKeyDown={handleKeyDown}
             placeholder={
               sandboxId
@@ -384,10 +410,10 @@ export default function AiChat({ sandboxId, onFilesChanged }) {
               lineHeight: "1.5",
               fontFamily: "inherit",
             }}
-            onInput={(e) => {
-              e.target.style.height = "auto";
-              e.target.style.height =
-                Math.min(e.target.scrollHeight, 120) + "px";
+            onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+              const target = e.currentTarget;
+              target.style.height = "auto";
+              target.style.height = Math.min(target.scrollHeight, 120) + "px";
             }}
           />
           <button

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 
-const FILE_ICONS = {
+const FILE_ICONS: Record<string, string> = {
   jsx: "⚛",
   tsx: "⚛",
   js: "🟡",
@@ -19,24 +19,37 @@ const FILE_ICONS = {
   default: "📄",
 };
 
-function getIcon(filename) {
+function getIcon(filename: string): string {
   const parts = filename.split(".");
   if (parts.length === 1) return FILE_ICONS.default;
   const ext = parts[parts.length - 1].toLowerCase();
   return FILE_ICONS[ext] || FILE_ICONS.default;
 }
 
-function buildTree(files) {
-  const root = {};
+// A tree node is either `null` (a file) or a nested record of child nodes (a directory)
+type TreeNodeData = { [name: string]: TreeNodeData | null };
+
+function buildTree(files: string[]): TreeNodeData {
+  const root: TreeNodeData = {};
   files.forEach((path) => {
     const parts = path.split("/");
     let node = root;
     parts.forEach((part, i) => {
       if (!node[part]) node[part] = i === parts.length - 1 ? null : {};
-      if (i < parts.length - 1) node = node[part];
+      if (i < parts.length - 1) node = node[part] as TreeNodeData;
     });
   });
   return root;
+}
+
+interface TreeNodeProps {
+  name: string;
+  node: TreeNodeData | null;
+  depth: number;
+  agentBase?: string;
+  activeFile?: string | null;
+  onFileSelect: (path: string) => void;
+  path: string;
 }
 
 function TreeNode({
@@ -47,7 +60,7 @@ function TreeNode({
   activeFile,
   onFileSelect,
   path,
-}) {
+}: TreeNodeProps) {
   const [open, setOpen] = useState(depth < 2);
   const isDir = node !== null && typeof node === "object";
   const fullPath = path ? `${path}/${name}` : name;
@@ -85,11 +98,11 @@ function TreeNode({
         </button>
         {open && (
           <div>
-            {Object.entries(node)
+            {Object.entries(node as TreeNodeData)
               .sort(([, a], [, b]) => {
                 const aDir = a !== null && typeof a === "object";
                 const bDir = b !== null && typeof b === "object";
-                return bDir - aDir;
+                return Number(bDir) - Number(aDir);
               })
               .map(([childName, childNode]) => (
                 <TreeNode
@@ -139,16 +152,23 @@ function TreeNode({
   );
 }
 
+interface FileExplorerProps {
+  agentBase?: string;
+  activeFile?: string | null;
+  onFileSelect: (path: string) => void;
+  refreshKey?: unknown;
+}
+
 export default function FileExplorer({
   agentBase,
   activeFile,
   onFileSelect,
   refreshKey,
-}) {
-  const [files, setFiles] = useState([]);
+}: FileExplorerProps) {
+  const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [tree, setTree] = useState({});
+  const [error, setError] = useState<string | null>(null);
+  const [tree, setTree] = useState<TreeNodeData>({});
 
   const fetchFiles = useCallback(async () => {
     if (!agentBase) return;
@@ -241,7 +261,7 @@ export default function FileExplorer({
             .sort(([, a], [, b]) => {
               const aDir = a !== null && typeof a === "object";
               const bDir = b !== null && typeof b === "object";
-              return bDir - aDir;
+              return Number(bDir) - Number(aDir);
             })
             .map(([name, node]) => (
               <TreeNode

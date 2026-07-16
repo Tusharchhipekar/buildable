@@ -1,12 +1,46 @@
-export default function TopBar({ sandboxId, activeTab, onTabChange, status }) {
+type Status = "ready" | "loading" | "error";
+
+interface StatusConfig {
+  color: string;
+  label: string;
+  dot: boolean;
+}
+
+const statusConfig: Record<Status, StatusConfig> = {
+  ready: { color: "#10b981", label: "Ready", dot: true },
+  loading: { color: "#f59e0b", label: "Working…", dot: false },
+  error: { color: "#ef4444", label: "Error", dot: true },
+};
+
+type TabId = "preview" | "files";
+
+interface Tab {
+  id: TabId;
+  icon: string;
+  label: string;
+}
+
+const TABS: Tab[] = [
+  { id: "preview", icon: "⬛", label: "Preview" },
+  { id: "files", icon: "📄", label: "Files" },
+];
+
+interface TopBarProps {
+  sandboxId?: string | null;
+  activeTab: TabId;
+  onTabChange: (tabId: TabId) => void;
+  status?: Status;
+}
+
+export default function TopBar({
+  sandboxId,
+  activeTab,
+  onTabChange,
+  status,
+}: TopBarProps) {
   const shortId = sandboxId ? sandboxId.slice(0, 8) + "…" : "";
 
-  const statusConfig = {
-    ready: { color: "#10b981", label: "Ready", dot: true },
-    loading: { color: "#f59e0b", label: "Working…", dot: false },
-    error: { color: "#ef4444", label: "Error", dot: true },
-  };
-  const s = statusConfig[status] || statusConfig.ready;
+  const s = (status && statusConfig[status]) || statusConfig.ready;
 
   return (
     <header
@@ -65,10 +99,7 @@ export default function TopBar({ sandboxId, activeTab, onTabChange, status }) {
         className="flex items-center gap-1 p-1 rounded-lg"
         style={{ background: "#0a0f1e", border: "1px solid #1e2d45" }}
       >
-        {[
-          { id: "preview", icon: "⬛", label: "Preview" },
-          { id: "files", icon: "📄", label: "Files" },
-        ].map((tab) => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}

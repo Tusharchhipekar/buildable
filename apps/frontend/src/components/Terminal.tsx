@@ -2,15 +2,19 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-export default function Terminal({ sandboxId }) {
-  const containerRef = useRef(null);
-  const termRef = useRef(null);
-  const fitAddonRef = useRef(null);
-  const socketRef = useRef(null);
+interface TerminalProps {
+  sandboxId?: string;
+}
+
+export default function Terminal({ sandboxId }: TerminalProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const termRef = useRef<XTerm | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const initTerminal = useCallback(() => {
     if (!containerRef.current || termRef.current) return;
@@ -70,7 +74,7 @@ export default function Terminal({ sandboxId }) {
   }, []);
 
   const connectSocket = useCallback(
-    (term) => {
+    (term: XTerm | undefined) => {
       if (!sandboxId || !term) return;
 
       const agentHost = `http://${sandboxId}.agent.localhost`;
@@ -96,13 +100,13 @@ export default function Terminal({ sandboxId }) {
           term.writeln("\r\n\x1b[33m⚠ Disconnected. Reconnecting...\x1b[0m");
         });
 
-        socket.on("connect_error", (err) => {
+        socket.on("connect_error", (err: Error) => {
           setConnected(false);
           setError("Connection failed");
           term.writeln(`\r\n\x1b[31m✗ Connection error: ${err.message}\x1b[0m`);
         });
 
-        socket.on("terminal-output", (data) => {
+        socket.on("terminal-output", (data: string) => {
           term.write(data);
         });
 
@@ -110,7 +114,7 @@ export default function Terminal({ sandboxId }) {
           socket.emit("terminal-input", data);
         });
       } catch (err) {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       }
     },
     [sandboxId],

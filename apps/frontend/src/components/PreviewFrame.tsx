@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
 
-export default function PreviewFrame({ previewUrl }) {
-  const iframeRef = useRef(null);
+interface PreviewFrameProps {
+  previewUrl?: string;
+}
+
+export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
 

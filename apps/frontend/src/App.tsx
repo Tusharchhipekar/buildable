@@ -5,17 +5,30 @@ import FileExplorer from "./components/FileExplorer";
 import PreviewFrame from "./components/PreviewFrame";
 import FileViewer from "./components/FileViewer";
 import Terminal from "./components/Terminal";
-import AiChat from "./components/AiChat";
+import AiChat from "./components/AIChat";
 
+type TabId = "preview" | "files";
+type Status = "ready" | "loading" | "error";
+
+interface SandboxState {
+  sandboxId: string;
+  previewUrl: string;
+  agentBase: string;
+}
+
+interface SandboxCreatedData {
+  sandboxId: string;
+  previewUrl: string;
+}
 
 export default function App() {
   // Sandbox state
-  const [sandbox, setSandbox] = useState(null); // { sandboxId, previewUrl, agentBase }
-  const [status, setStatus] = useState("ready");
+  const [sandbox, setSandbox] = useState<SandboxState | null>(null);
+  const [status, setStatus] = useState<Status>("ready");
 
   // UI state
-  const [activeTab, setActiveTab] = useState("preview"); // 'preview' | 'files'
-  const [activeFile, setActiveFile] = useState(null);
+  const [activeTab, setActiveTab] = useState<TabId>("preview");
+  const [activeFile, setActiveFile] = useState<string | null>(null);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
 
   // Terminal resize
@@ -24,7 +37,7 @@ export default function App() {
   const dragStartY = useRef(0);
   const dragStartH = useRef(0);
 
-  const handleSandboxCreated = useCallback((data) => {
+  const handleSandboxCreated = useCallback((data: SandboxCreatedData) => {
     const agentBase = `http://${data.sandboxId}.agent.localhost`;
     setSandbox({
       sandboxId: data.sandboxId,
@@ -38,18 +51,18 @@ export default function App() {
     setFileRefreshKey((k) => k + 1);
   }, []);
 
-  const handleFileSelect = useCallback((path) => {
+  const handleFileSelect = useCallback((path: string) => {
     setActiveFile(path);
     setActiveTab("files");
   }, []);
 
   // Drag to resize terminal
-  const handleDragStart = (e) => {
+  const handleDragStart = (e: React.MouseEvent) => {
     isDragging.current = true;
     dragStartY.current = e.clientY;
     dragStartH.current = terminalHeight;
 
-    const onMove = (ev) => {
+    const onMove = (ev: MouseEvent) => {
       if (!isDragging.current) return;
       const delta = dragStartY.current - ev.clientY;
       const newH = Math.min(Math.max(dragStartH.current + delta, 80), 500);
@@ -131,13 +144,13 @@ export default function App() {
           >
             <Terminal sandboxId={sandboxId} />
           </div>
-          </div>
+        </div>
 
-      {/* Right — AI Chat */}
+        {/* Right — AI Chat */}
         <div className="shrink-0 overflow-hidden" style={{ width: "340px" }}>
           <AiChat sandboxId={sandboxId} onFilesChanged={handleFilesChanged} />
         </div>
       </div>
     </div>
   );
-};
+}

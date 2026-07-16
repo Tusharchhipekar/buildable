@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const LANGUAGE_MAP = {
+const LANGUAGE_MAP: Record<string, string> = {
   js: "javascript",
   jsx: "javascript",
   ts: "typescript",
@@ -15,15 +15,20 @@ const LANGUAGE_MAP = {
   yaml: "yaml",
 };
 
-function getLanguage(filename) {
+function getLanguage(filename: string): string {
   const ext = filename.split(".").pop()?.toLowerCase();
-  return LANGUAGE_MAP[ext] || "plaintext";
+  return (ext && LANGUAGE_MAP[ext]) || "plaintext";
 }
 
-export default function FileViewer({ agentBase, filePath }) {
-  const [content, setContent] = useState(null);
+interface FileViewerProps {
+  agentBase?: string;
+  filePath?: string | null;
+}
+
+export default function FileViewer({ agentBase, filePath }: FileViewerProps) {
+  const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!agentBase || !filePath) return;
@@ -38,7 +43,7 @@ export default function FileViewer({ agentBase, filePath }) {
         const data = await res.json();
         const fileData = data.files?.[0];
         if (fileData) {
-          const fileContent = Object.values(fileData)[0];
+          const fileContent = Object.values(fileData)[0] as string;
           setContent(fileContent);
         } else {
           setError("File not found or empty");
