@@ -195,7 +195,7 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
 
     try {
       // Use fetch with SSE manually
-      const response = await fetch("/api/ai/invoke", {
+      const response = await fetch("/api/ai/agent/invoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, projectId: sandboxId }),

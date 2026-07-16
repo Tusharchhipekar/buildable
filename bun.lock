@@ -37,9 +37,11 @@
       "version": "0.0.0",
       "dependencies": {
         "@tailwindcss/vite": "^4.3.2",
+        "@types/http-proxy-middleware": "^1.0.0",
         "@xterm/addon-fit": "^0.11.0",
         "@xterm/addon-web-links": "^0.12.0",
         "@xterm/xterm": "^6.0.0",
+        "http-proxy-middleware": "^4.2.0",
         "react": "^19.2.7",
         "react-dom": "^19.2.7",
         "socket.io-client": "^4.8.3",
@@ -63,9 +65,11 @@
     "apps/sandbox/agent": {
       "name": "@repo/agent",
       "dependencies": {
+        "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
         "@types/morgan": "^1.9.10",
         "@types/socket.io": "^3.0.2",
+        "cors": "^2.8.6",
         "dotenv": "^17.4.2",
         "express": "^5.2.1",
         "morgan": "^1.11.0",
@@ -87,6 +91,7 @@
         "dotenv": "^17.4.2",
         "express": "^5.2.1",
         "http-proxy-middleware": "^4.2.0",
+        "httpxy": "^0.5.5",
         "morgan": "^1.11.0",
       },
       "devDependencies": {
@@ -423,6 +428,8 @@
     "@types/express-serve-static-core": ["@types/express-serve-static-core@5.1.2", "", { "dependencies": { "@types/node": "*", "@types/qs": "*", "@types/range-parser": "*", "@types/send": "*" } }, "sha512-d3KvEXBSo/lOAMc2u6fkyDHBvetBHeqD7wm/AcXfLpSOQwlmG9D/aQ0SFswVjv05p7ullQS7Mjohj6/VdbZuTg=="],
 
     "@types/http-errors": ["@types/http-errors@2.0.5", "", {}, "sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg=="],
+
+    "@types/http-proxy-middleware": ["@types/http-proxy-middleware@1.0.0", "", { "dependencies": { "http-proxy-middleware": "*" } }, "sha512-/s8lFX6rT43hSPqjjD8KNuu0SkPKY7uIdR6u9DCxVqCRhAvfKxGbVOixJsAT2mdpSnCyrGFAGoB39KFh6tmRxw=="],
 
     "@types/js-yaml": ["@types/js-yaml@4.0.9", "", {}, "sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg=="],
 
