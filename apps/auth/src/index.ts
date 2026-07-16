@@ -42,6 +42,14 @@ passport.use(
   ),
 );
 
+app.get("/_status/health", (req, res) => {
+  res.status(200).json({ status: "ok", service: "auth" });
+});
+
+app.get("/_status/ready", (req, res) => {
+  res.status(200).json({ status: "ready", service: "auth" });
+});
+
 app.use("/api/auth", authRouter);
 
 app.listen(config.AUTH_PORT, () => {

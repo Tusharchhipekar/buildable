@@ -14,7 +14,14 @@ build:
       sync:
        infer:
         - "apps/ai-orchestration/src/**"
-        
+
+    - image: auth
+      context: .
+      docker:
+        dockerfile: apps/auth/dockerfile
+      sync:
+        infer:
+          - "apps/auth/src/**"
 
     - image: agent
       context: .
@@ -54,6 +61,9 @@ manifests:
      
      - k8s/ai-deployment.yml
      - k8s/ai-service.yml
+
+     - k8s/auth-deployment.yml
+     - k8s/auth-service.yml
 
      - k8s/sandbox-deployment.yml
      - k8s/sandbox-service.yml
