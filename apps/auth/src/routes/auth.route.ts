@@ -37,12 +37,12 @@ authRouter.get(
         await user.save();
       }
 
-      await sendAuthNotification({
-        userId: user._id,
-        action: "google_login",
-        timestamp: new Date(),
-        email: emails?.[0]?.value,
-      });
+      //   await sendAuthNotification({
+      //     userId: user._id,
+      //     action: "google_login",
+      //     timestamp: new Date(),
+      //     email: emails?.[0]?.value,
+      //   });
 
       // Generate JWT token
       const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
