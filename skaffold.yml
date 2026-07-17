@@ -39,6 +39,11 @@ build:
         infer:
           - "apps/sandbox/agent/src/**"
 
+    - image: sync-agent
+      context: .
+      docker:
+        dockerfile: apps/sandbox/sync-agent/dockerfile      
+
     - image: router
       context: .
       docker:
