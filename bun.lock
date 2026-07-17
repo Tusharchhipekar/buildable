@@ -142,6 +142,7 @@
         "express": "^5.2.1",
         "http-proxy-middleware": "^4.2.0",
         "httpxy": "^0.5.5",
+        "ioredis": "^5.11.1",
         "morgan": "^1.11.0",
       },
       "devDependencies": {

@@ -1,7 +1,7 @@
 import Redis from "ioredis";
-import { deletePod } from "../kubernetes/pod.js";
-import { deleteService } from "../kubernetes/service.js";
-import { config } from "./config.js";
+import { deletePod } from "../kubernetes/pod";
+import { deleteService } from "../kubernetes/service";
+import { config } from "./config";
 
 const redis = new Redis(config.REDIS_URL);
 const subscriber = new Redis(config.REDIS_URL);
@@ -33,10 +33,12 @@ subscriber.on("message", async (channel, Key) => {
 
   // Delete the pod and service
   try {
-    await Promise.all([deletePod(sandboxId), deleteService(sandboxId)]);
-    console.log("Pod and service deleted successfully");
+    if (sandboxId) {
+      await Promise.all([deletePod(sandboxId), deleteService(sandboxId)]);
+      console.log(`Pod and service deleted successfully ${sandboxId}`);
+    }
   } catch (error) {
-    console.log("Error deleting pod and service:", error);
+    console.log(`Error deleting pod and service ${sandboxId}:`, error);
   }
 });
 

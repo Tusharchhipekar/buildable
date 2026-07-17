@@ -6,7 +6,6 @@ import { v7 as uuid } from "uuid";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { projectModel } from "@repo/mongodb";
 import type { Request, Response } from "express";
-import ts from "typescript";
 
 const router = Router();
 
@@ -53,7 +52,7 @@ router.post("/start", authMiddleware, async (req, res) => {
   return res.status(201).json({
     message: "Sandbox environment created successfully",
     sandboxId,
-    previewUrl: `https://${sandboxId}.preview.cryboy.in`,
+    previewUrl: `http://${sandboxId}.preview.localhost`,
   });
 });
 

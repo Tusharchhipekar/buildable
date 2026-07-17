@@ -17,18 +17,6 @@ app.get("/api/sandbox/health", (req, res) => {
   });
 });
 
-app.post("/api/sandbox/start", async (req, res) => {
-  const sandboxId = uuid();
-
-  await Promise.all([createPod(sandboxId), createService(sandboxId)]);
-
-  return res.status(200).json({
-    message: "sandbox started successfully",
-    sandboxId,
-    previewUrl: `http://${sandboxId}.preview.localhost`,
-  });
-});
-
 app.listen(config.SANDBOX_PORT, () => {
   console.log(`Server is running on http://localhost:${config.SANDBOX_PORT}`);
 });
