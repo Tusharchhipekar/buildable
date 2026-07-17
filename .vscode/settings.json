@@ -6,6 +6,8 @@
         "healthcheck",
         "httpxy",
         "INITDB",
+        "keyevent",
+        "keyspace",
         "MISTRALAI",
         "mongosh",
         "Stabilise"

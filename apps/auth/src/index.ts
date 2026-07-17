@@ -9,12 +9,19 @@ import {
 import cookieParser from "cookie-parser";
 import { config } from "./config/config"; // adjust to wherever GOOGLE_CLIENT_ID/SECRET live
 import { authRouter } from "./routes/auth.route";
+import cors from "cors";
 
 const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 app.use(passport.initialize());
 

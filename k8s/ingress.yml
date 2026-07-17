@@ -23,6 +23,16 @@ metadata:
       # Cookie is valid for all paths under the domain
     nginx.ingress.kubernetes.io/session-cookie-path: "/"
 
+    #Enable CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+
+    # Allow requests from our domain
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://www.cryboy.in"
+
+    # Allow cookies to be sent
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    # Allow cookies to be sent
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE"
 
   labels:
     app.kubernetes.io/name: buildable-ingress
