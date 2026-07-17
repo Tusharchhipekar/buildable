@@ -1,12 +1,116 @@
 import { Router } from "express";
 import passport from "passport";
-import { sendAuthNotification } from "../config/mq.js";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendAuthNotification } from "../config/mq.js";
 import { config } from "../config/config.js";
 import { userModel } from "@repo/mongodb";
-import type { Request, Response } from "express";
+import type { Request, Response, CookieOptions } from "express";
 import type { GoogleProfile } from "../types.js";
+import type {
+  RegisterBody,
+  LoginBody,
+  AuthResponseBody,
+  ErrorResponseBody,
+} from "../types.js";
+
 export const authRouter = Router();
+
+const COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true, // JS can't read it — XSS protection
+  secure: true, // only sent over HTTPS
+  sameSite: "none", // allow cross-site (iframes, different subdomains)
+  domain: ".cryboy.in", // works across all *.cryboy.in subdomains
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+function signToken(userId: string): string {
+  return jwt.sign({ id: userId }, config.JWT_SECRET, { expiresIn: "1h" });
+}
+
+authRouter.post(
+  "/register",
+  async (
+    req: Request<{}, AuthResponseBody | ErrorResponseBody, RegisterBody>,
+    res: Response<AuthResponseBody | ErrorResponseBody>,
+  ) => {
+    try {
+      const { email, password, name } = req.body;
+
+      if (!email || !password) {
+        return res
+          .status(400)
+          .json({ error: "Email and password are required" });
+      }
+
+      const existing = await userModel.findOne({ email });
+      if (existing) {
+        return res.status(409).json({ error: "User already exists" });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      const user = new userModel({
+        email,
+        name,
+        password: passwordHash,
+      });
+      await user.save();
+
+      const token = signToken(user._id.toString());
+      res.cookie("token", token, COOKIE_OPTIONS);
+
+      res.status(201).json({
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+      });
+    } catch (err) {
+      console.error("Error during registration:", err);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  },
+);
+
+authRouter.post(
+  "/login",
+  async (
+    req: Request<{}, AuthResponseBody | ErrorResponseBody, LoginBody>,
+    res: Response<AuthResponseBody | ErrorResponseBody>,
+  ) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res
+          .status(400)
+          .json({ error: "Email and password are required" });
+      }
+
+      const user = await userModel.findOne({ email });
+      if (!user || !user.password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const token = signToken(user._id.toString());
+      res.cookie("token", token, COOKIE_OPTIONS);
+
+      res.status(200).json({
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+      });
+    } catch (err) {
+      console.error("Error during login:", err);
+      res.status(500).json({ error: "Login failed" });
+    }
+  },
+);
 
 authRouter.get(
   "/google",
@@ -44,23 +148,13 @@ authRouter.get(
       //     email: emails?.[0]?.value,
       //   });
 
-      // Generate JWT token
-      const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = signToken(user._id.toString());
+      res.cookie("token", token, COOKIE_OPTIONS);
 
-      // Set token in cookie
-      res.cookie("token", token, {
-        httpOnly: true, // JS can't read it — XSS protection
-        secure: true, // only sent over HTTPS
-        sameSite: "none", // allow cross-site (iframes, different subdomains)
-        domain: ".cryboy.in", // works across all *.cryboy.in subdomains
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-      res.redirect("https://www.cryboy.in"); // Redirect to your frontend after successful login
+      res.redirect("https://www.cryboy.in");
     } catch (err) {
       console.error("Error during Google authentication:", err);
-      res.redirect("/"); // Redirect to your frontend on error
+      res.redirect("/");
     }
   },
 );
