@@ -22,6 +22,14 @@ build:
       sync:
         infer:
           - "apps/auth/src/**"
+    
+    - image: notification
+      context: .
+      docker:
+        dockerfile: apps/notification/dockerfile
+      sync:
+        infer:
+          - "apps/notification/src/**"  
 
     - image: agent
       context: .
@@ -64,6 +72,9 @@ manifests:
 
      - k8s/auth-deployment.yml
      - k8s/auth-service.yml
+
+     - k8s/notification-deployment.yml
+     - k8s/notification-service.yml
 
      - k8s/sandbox-deployment.yml
      - k8s/sandbox-service.yml

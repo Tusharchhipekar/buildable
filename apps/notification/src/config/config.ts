@@ -21,10 +21,15 @@ if (!process.env.RABBITMQ_URL) {
   throw new Error("RABBITMQ_URL is not defined");
 }
 
+if (!process.env.NOTIFICATION_PORT) {
+  throw new Error("NOTIFICATION_PORT is not defined");
+}
+
 export const config = {
   EMAIL_USER: process.env.EMAIL_USER,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
   RABBITMQ_URL: process.env.RABBITMQ_URL,
+  NOTIFICATION_PORT: process.env.NOTIFICATION_PORT,
 };

@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import morgan from "morgan";
 import channel from "./mq.js";
 import { sendEmail } from "./email.js";
+import { config } from "./config/config.js";
 
 export const app = express();
 app.use(express.json());
@@ -52,4 +53,10 @@ channel.consume("auth_notification_queue", async (msg) => {
     // Optionally, you can choose to nack the message to requeue it
     // channel.nack(msg);
   }
+});
+
+app.listen(config.NOTIFICATION_PORT, () => {
+  console.log(
+    `Notification server is running on port http://localhost:${config.NOTIFICATION_PORT}`,
+  );
 });
