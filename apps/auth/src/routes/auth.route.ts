@@ -151,7 +151,7 @@ authRouter.get(
       const token = signToken(user._id.toString());
       res.cookie("token", token, COOKIE_OPTIONS);
 
-      res.redirect("https://www.cryboy.in");
+      res.redirect("http://localhost:5173");
     } catch (err) {
       console.error("Error during Google authentication:", err);
       res.redirect("/");

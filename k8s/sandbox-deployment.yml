@@ -48,7 +48,13 @@ spec:
             valueFrom:
               secretKeyRef:
                 name:  database
-                key:  SANDBOX_MONGO_URL  
+                key:  SANDBOX_MONGO_URL 
+
+          - name:  JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name:  jwt
+                key:  JWT_SECRET
         ports:
         - containerPort:  3000
           name:  main-sandbox
