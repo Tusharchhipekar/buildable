@@ -1,5 +1,7 @@
 import amqplib from "amqplib";
-import { config } from "./config";
+import dotenv from "dotenv";
+import { config } from "./config/config";
+dotenv.config();
 
 const QUEUE = "auth_notification_queue";
 
@@ -9,8 +11,4 @@ const channel = await connection.createChannel();
 
 await channel.assertQueue(QUEUE, { durable: true });
 
-export async function sendAuthNotification(message: any) {
-  channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), {
-    persistent: true,
-  });
-}
+export default channel;

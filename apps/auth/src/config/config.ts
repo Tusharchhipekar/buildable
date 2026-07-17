@@ -12,9 +12,15 @@ if (!process.env.GOOGLE_CLIENT_SECRET) {
 if (!process.env.GOOGLE_CLIENT_ID) {
   throw new Error("GOOGLE_CLIENT_ID is not defined");
 }
+
+if (!process.env.RABBITMQ_URL) {
+  throw new Error("RABBITMQ_URL is not defined");
+}
+
 export const config = {
   JWT_SECRET: process.env.JWT_SECRET,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   AUTH_PORT: process.env.AUTH_PORT,
+  RABBITMQ_URL: process.env.RABBITMQ_URL,
 };

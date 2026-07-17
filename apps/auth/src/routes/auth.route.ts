@@ -141,12 +141,12 @@ authRouter.get(
         await user.save();
       }
 
-      //   await sendAuthNotification({
-      //     userId: user._id,
-      //     action: "google_login",
-      //     timestamp: new Date(),
-      //     email: emails?.[0]?.value,
-      //   });
+      await sendAuthNotification({
+        userId: user._id,
+        action: "google_login",
+        timestamp: new Date(),
+        email: emails?.[0]?.value,
+      });
 
       const token = signToken(user._id.toString());
       res.cookie("token", token, COOKIE_OPTIONS);
