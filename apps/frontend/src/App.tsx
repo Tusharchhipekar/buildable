@@ -22,16 +22,13 @@ interface SandboxCreatedData {
 }
 
 export default function App() {
-  // Sandbox state
   const [sandbox, setSandbox] = useState<SandboxState | null>(null);
   const [status, setStatus] = useState<Status>("ready");
 
-  // UI state
   const [activeTab, setActiveTab] = useState<TabId>("preview");
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
 
-  // Terminal resize
   const [terminalHeight, setTerminalHeight] = useState(220);
   const isDragging = useRef(false);
   const dragStartY = useRef(0);
@@ -56,7 +53,6 @@ export default function App() {
     setActiveTab("files");
   }, []);
 
-  // Drag to resize terminal
   const handleDragStart = (e: React.MouseEvent) => {
     isDragging.current = true;
     dragStartY.current = e.clientY;
@@ -77,7 +73,6 @@ export default function App() {
     document.addEventListener("mouseup", onUp);
   };
 
-  // Landing / splash
   if (!sandbox) {
     return <SplashScreen onSandboxCreated={handleSandboxCreated} />;
   }

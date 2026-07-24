@@ -43,17 +43,16 @@ spec:
               secretKeyRef:
                 name:  port
                 key:  AI_PORT
-          - name:  MISTRALAI_API_KEY
+          - name:  MISTRAL_API_KEY
             valueFrom:
               secretKeyRef:
                 name:  ai-secret
                 key:  MISTRALAI_API_KEY
-          
-          - name:  ANTHROPIC_API_KEY
+          - name:  JWT_SECRET
             valueFrom:
               secretKeyRef:
-                name:  ai-secret
-                key:  ANTHROPIC_API_KEY
+                name:  jwt
+                key:  JWT_SECRET
         ports:
         - containerPort:  3000
           name:  ai-server-port

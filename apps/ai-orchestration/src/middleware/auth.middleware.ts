@@ -1,4 +1,4 @@
-import { verifyToken } from "../utils.js";
+import { verifyToken } from "../utils";
 import type { Request, Response, NextFunction } from "express";
 
 export function authMiddleware(
@@ -7,7 +7,7 @@ export function authMiddleware(
   next: NextFunction,
 ) {
   const token =
-    req.cookies.token || req.headers["authorization"]?.split(" ")[1];
+    req.cookies?.token || req.headers["authorization"]?.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({ message: "Authentication token is missing" });

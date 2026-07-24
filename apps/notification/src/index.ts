@@ -27,7 +27,6 @@ interface AuthNotificationMessage {
   email: string;
 }
 
-// consume auth notification
 channel.consume("auth_notification_queue", async (msg) => {
   if (msg === null) {
     console.log("Received null message");

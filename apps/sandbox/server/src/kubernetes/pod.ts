@@ -1,5 +1,4 @@
 import { k8sCoreV1Api } from "./config.js";
-import { V1Volume } from "@kubernetes/client-node";
 
 export async function createPod(sandboxId: string, projectId: any) {
   const podManifest = {
@@ -64,8 +63,8 @@ export async function createPod(sandboxId: string, projectId: any) {
           name: "agent-container",
           ports: [
             {
-              containerPort: 5000,
-              name: "http",
+              containerPort: 3000,
+              name: "agent-http",
             },
           ],
           resources: {

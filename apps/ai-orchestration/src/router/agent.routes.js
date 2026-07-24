@@ -1,12 +1,11 @@
 import { Router } from "express";
-import agent from "../agents/code.agent";
+import { agent } from "../agent/code.agent";
 
 const agentRouter = Router();
 
 agentRouter.post("/invoke", async (req, res) => {
   const { message, projectId } = req.body;
 
-  //added server side events
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",

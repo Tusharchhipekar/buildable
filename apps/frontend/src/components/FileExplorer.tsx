@@ -26,7 +26,6 @@ function getIcon(filename: string): string {
   return FILE_ICONS[ext] || FILE_ICONS.default;
 }
 
-// A tree node is either `null` (a file) or a nested record of child nodes (a directory)
 type TreeNodeData = { [name: string]: TreeNodeData | null };
 
 function buildTree(files: string[]): TreeNodeData {

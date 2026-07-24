@@ -47,7 +47,6 @@ async function downloadFilesFromS3(s3Objects: S3Object[]): Promise<void> {
     const relativePath: string = file.Key.replace(`${projectId}/`, "");
     const localFilePath: string = path.join(localDirectory, relativePath);
 
-    // Ensure the local directory structure exists
     fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
 
     const writeStream = fs.createWriteStream(localFilePath);
@@ -65,14 +64,13 @@ async function downloadFilesFromS3(s3Objects: S3Object[]): Promise<void> {
 async function uploadFileToS3(filePath: string): Promise<void> {
   try {
     if (filePath.includes("node_modules") || filePath.includes(".env")) {
-      return; // Skip syncing node_modules and .env files
+      return;
     }
 
     const fileContent: Buffer = fs.readFileSync(filePath);
     const relativePath: string = path.relative(localDirectory, filePath);
 
     console.log(filePath);
-    // Files will have the prefix of projectId
     const s3Key: string = `${projectId}/${relativePath}`;
 
     const command = new PutObjectCommand({
@@ -105,7 +103,7 @@ function startWatcher(hasFiles: boolean): void {
     .on("all", async (event: string, filePath: string) => {
       if (event === "add" || event === "change") {
         if (filePath.includes("node_modules") || filePath.includes(".env")) {
-          return; // Skip syncing node_modules and .env files
+          return;
         }
         await uploadFileToS3(filePath);
       }

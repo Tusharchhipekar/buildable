@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { createPod } from "../kubernetes/pod.js";
-import { createService } from "../kubernetes/service.js";
+import { createPod, deletePod } from "../kubernetes/pod.js";
+import { createService, deleteService } from "../kubernetes/service.js";
 import { createSandboxKey } from "../config/redis";
-import { v7 as uuid } from "uuid";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { projectModel } from "@repo/mongodb";
 import type { Request, Response } from "express";
@@ -28,7 +27,6 @@ router.post("/project", authMiddleware, async (req: Request, res: Response) => {
 router.post("/start", authMiddleware, async (req, res) => {
   const projectId = req.body.projectId;
 
-  // Verify that the project belongs to the authenticated user
   const project = await projectModel.findOne({
     _id: projectId,
     user: (req as any).user.id,
@@ -40,14 +38,21 @@ router.post("/start", authMiddleware, async (req, res) => {
       .json({ message: "Project not found or access denied" });
   }
 
-  const sandboxId = uuid();
+  const sandboxId = projectId;
 
-  await Promise.all([
-    // @ts-ignore
-    createPod(sandboxId, projectId),
-    createService(sandboxId),
-    createSandboxKey(sandboxId),
-  ]);
+  try {
+    await Promise.all([
+      createPod(sandboxId, projectId),
+      createService(sandboxId),
+      createSandboxKey(sandboxId),
+    ]);
+  } catch (err) {
+    console.error("Failed to create sandbox, rolling back:", err);
+    await Promise.allSettled([deletePod(sandboxId), deleteService(sandboxId)]);
+    return res
+      .status(500)
+      .json({ message: "Failed to create sandbox environment" });
+  }
 
   return res.status(201).json({
     message: "Sandbox environment created successfully",

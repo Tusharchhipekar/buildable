@@ -8,6 +8,7 @@
         "INITDB",
         "keyevent",
         "keyspace",
+        "langchain",
         "MISTRALAI",
         "mongosh",
         "Stabilise"

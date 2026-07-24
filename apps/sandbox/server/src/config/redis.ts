@@ -31,7 +31,6 @@ subscriber.on("message", async (channel, Key) => {
 
   const sandboxId = Key.split(":")[1];
 
-  // Delete the pod and service
   try {
     if (sandboxId) {
       await Promise.all([deletePod(sandboxId), deleteService(sandboxId)]);

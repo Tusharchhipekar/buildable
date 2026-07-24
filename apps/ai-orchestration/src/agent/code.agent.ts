@@ -1,9 +1,17 @@
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { generateText, stepCountIs } from "ai";
-import { list_files, read_files, update_files } from "./tool";
+import {
+  list_files,
+  read_files,
+  update_files,
+  sandboxContextSchema,
+} from "./tool";
+import { ChatMistralAI } from "@langchain/mistralai";
+import { HumanMessage } from "@langchain/core/messages";
+import { createAgent } from "langchain";
 
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const model = new ChatMistralAI({
+  model: "mistral-large-latest",
+  apiKey: process.env.MISTRAL_API_KEY,
+  temperature: 0.7,
 });
 
 const systemPrompt = `
@@ -159,18 +167,17 @@ FINAL PRINCIPLE
 ═══════════════════════════════════════════════
 Build the thing a senior frontend engineer with taste and one afternoon to spare would build — and make it unmistakably about this brief, not a template with the words swapped out. Default to doing more, not less. When in doubt, ship something polished and offer to refine.`;
 
-export async function runAgent(userMessage: string, projectId: string) {
-  const result = await generateText({
-    model: anthropic("claude-sonnet-5"),
-    system: systemPrompt,
-    tools: { list_files, read_files, update_files },
-    stopWhen: stepCountIs(10), // stop the tool-calling loop after 10 steps
-    toolsContext: {
-      list_files: { projectId },
-      read_files: { projectId },
-      update_files: { projectId },
-    },
-    prompt: userMessage,
-  });
+export const agent = createAgent({
+  model,
+  tools: [list_files, read_files, update_files],
+  systemPrompt,
+  contextSchema: sandboxContextSchema,
+});
+
+export async function runCodeAgent(userMessage: string, projectId: string) {
+  const result = await agent.invoke(
+    { messages: [new HumanMessage(userMessage)] },
+    { context: { projectId } },
+  );
   return result;
 }

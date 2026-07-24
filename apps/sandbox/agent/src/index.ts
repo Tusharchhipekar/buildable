@@ -40,7 +40,6 @@ app.get("/", (req, res) => {
 
 const shell = "bash";
 
-// Spawn the PTY process
 const ptyProcess = pty.spawn(shell, [], {
   name: "xterm-color",
   cols: 80,
@@ -94,7 +93,6 @@ app.get("/list-files", async (req, res) => {
       const fullPath = path.join(dir, entry.name);
       const relativePath = path.relative(baseDir, fullPath);
 
-      // Exclude certain directories
       if (
         entry.isDirectory() &&
         ["node_modules", ".git", "dist"].includes(entry.name)

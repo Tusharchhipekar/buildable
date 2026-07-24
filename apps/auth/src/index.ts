@@ -7,7 +7,7 @@ import {
   type VerifyCallback,
 } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
-import { config } from "./config/config"; // adjust to wherever GOOGLE_CLIENT_ID/SECRET live
+import { config } from "./config/config";
 import { authRouter } from "./routes/auth.route";
 import cors from "cors";
 

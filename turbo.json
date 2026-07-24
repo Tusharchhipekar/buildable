@@ -16,7 +16,15 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["SERVER_PORT", "MONGODB_URL", "AI_PORT", "ROUTER_PORT", "AGENT_PORT"]
+      "env": [
+        "SERVER_PORT",
+        "MONGODB_URL",
+        "AI_PORT",
+        "ROUTER_PORT",
+        "AGENT_PORT",
+        "MISTRAL_API_KEY"
+       
+      ]
     }
   }
 }

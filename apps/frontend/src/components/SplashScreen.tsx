@@ -29,17 +29,15 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(
     null,
-  ); // id being opened
+  );
   const [error, setError] = useState<string | null>(null);
 
   const [title, setTitle] = useState<string>("");
-  const [loadingStep, setLoadingStep] = useState<LoadingStep>(""); // 'project' | 'sandbox'
+  const [loadingStep, setLoadingStep] = useState<LoadingStep>("");
 
-  // Existing projects
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState<boolean>(true);
 
-  // Fetch existing projects on mount
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -59,7 +57,6 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
     fetchProjects();
   }, []);
 
-  // Animated dots while loading
   const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
@@ -83,7 +80,6 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
     };
   }, []);
 
-  // Start sandbox for an existing project
   const handleOpenProject = async (projectId: string) => {
     setLoadingProjectId(projectId);
     setError(null);
@@ -104,7 +100,6 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
     }
   };
 
-  // Create new project then start its sandbox
   const handleCreate = async () => {
     const projectTitle = title.trim();
     if (!projectTitle) {
@@ -114,7 +109,6 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
     setLoading(true);
     setError(null);
     try {
-      // Step 1: Create the project
       setLoadingStep("project");
       const projectRes = await fetch("/api/sandbox/project", {
         method: "POST",
@@ -127,7 +121,6 @@ export default function SplashScreen({ onSandboxCreated }: SplashScreenProps) {
       const projectData = await projectRes.json();
       const projectId: string = projectData.project._id;
 
-      // Step 2: Start the sandbox
       setLoadingStep("sandbox");
       const sandboxRes = await fetch("/api/sandbox/start", {
         method: "POST",

@@ -145,7 +145,6 @@ export default function Terminal({ sandboxId }: TerminalProps) {
     };
   }, [initTerminal, connectSocket]);
 
-  // Handle resize
   useEffect(() => {
     const observer = new ResizeObserver(() => {
       if (fitAddonRef.current) {
