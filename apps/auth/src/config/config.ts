@@ -23,4 +23,7 @@ export const config = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   AUTH_PORT: process.env.AUTH_PORT,
   RABBITMQ_URL: process.env.RABBITMQ_URL,
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+  COOKIE_DOMAIN: process.env.COOKIE_DOMAIN,
+  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
 };

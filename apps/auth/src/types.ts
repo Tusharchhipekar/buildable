@@ -20,6 +20,7 @@ export type AuthResponseBody = {
   id: string;
   email: string;
   name?: string;
+  avatar?: string;
 };
 
 export type ErrorResponseBody = {

@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: config.FRONTEND_URL,
     credentials: true,
   }),
 );
@@ -36,7 +36,8 @@ passport.use(
     {
       clientID: config.GOOGLE_CLIENT_ID,
       clientSecret: config.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback",
+      callbackURL:
+        config.GOOGLE_CALLBACK_URL || "/api/auth/google/callback",
     },
     (
       _accessToken: string,

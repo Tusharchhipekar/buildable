@@ -6,6 +6,7 @@
 
 # Turborepo
 **/.turbo
+**/out
 
 # Build output
 **/dist

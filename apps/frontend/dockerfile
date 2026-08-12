@@ -1,11 +1,11 @@
 FROM oven/bun:1 AS base
 WORKDIR /app
 
-# Prune the monorepo down to just this app + the workspace packages it
-# depends on, so later layers don't depend on unrelated apps' files.
+# Prune the monorepo down to just this app (frontend has no internal
+# @repo/* dependencies), so later layers don't depend on unrelated apps.
 FROM base AS pruner
 COPY . .
-RUN bunx turbo prune @repo/auth --docker
+RUN bunx turbo prune frontend --docker
 
 # Install deps from the pruned lockfile/package.jsons only — this layer is
 # cached across builds unless a dependency actually changes, so editing
@@ -21,6 +21,6 @@ FROM base AS runtime
 COPY --from=installer /app ./
 COPY --from=pruner /app/out/full/ .
 
-EXPOSE 3000
+EXPOSE 5173
 
-CMD ["bun", "apps/auth/src/index.ts"]
+CMD ["bun", "--filter", "frontend", "dev"]

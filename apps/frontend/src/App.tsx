@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from "react";
-import SplashScreen from "./components/SplashScreen";
+import { useState, useRef, useCallback, useEffect } from "react";
+import SignIn from "./components/SignIn";
+import Dashboard from "./components/Dashboard";
 import TopBar from "./components/TopBar";
 import FileExplorer from "./components/FileExplorer";
 import PreviewFrame from "./components/PreviewFrame";
@@ -21,9 +22,48 @@ interface SandboxCreatedData {
   previewUrl: string;
 }
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  avatar?: string;
+}
+
 export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [sandbox, setSandbox] = useState<SandboxState | null>(null);
   const [status, setStatus] = useState<Status>("ready");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data) setUser(data);
+      })
+      .catch(() => {
+        // Not logged in — SignIn screen handles this.
+      })
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      setUser(null);
+      setSandbox(null);
+    }
+  }, []);
 
   const [activeTab, setActiveTab] = useState<TabId>("preview");
   const [activeFile, setActiveFile] = useState<string | null>(null);
@@ -73,8 +113,32 @@ export default function App() {
     document.addEventListener("mouseup", onUp);
   };
 
+  if (checkingSession) {
+    return (
+      <div
+        className="flex items-center justify-center h-full w-full"
+        style={{ background: "#151317" }}
+      >
+        <div
+          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: "#d7baff", borderTopColor: "transparent" }}
+        />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <SignIn onAuthenticated={(u) => setUser(u)} />;
+  }
+
   if (!sandbox) {
-    return <SplashScreen onSandboxCreated={handleSandboxCreated} />;
+    return (
+      <Dashboard
+        user={user}
+        onSandboxCreated={handleSandboxCreated}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   const { sandboxId, previewUrl, agentBase } = sandbox;

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { sendAuthNotification } from "../config/mq.js";
 import { config } from "../config/config.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 import { userModel } from "@repo/mongodb";
 import type { Request, Response, CookieOptions } from "express";
 import type { GoogleProfile } from "../types.js";
@@ -16,13 +17,24 @@ import type {
 
 export const authRouter = Router();
 
-const COOKIE_OPTIONS: CookieOptions = {
-  httpOnly: true, // JS can't read it — XSS protection
-  secure: true, // only sent over HTTPS
-  sameSite: "none", // allow cross-site (iframes, different subdomains)
-  domain: ".cryboy.in", // works across all *.cryboy.in subdomains
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-};
+// secure + a cross-subdomain `domain` only work together over HTTPS on a
+// real domain — browsers silently drop the cookie otherwise, so local/
+// compose dev (COOKIE_DOMAIN unset) falls back to relaxed settings scoped
+// to whatever host actually served the request.
+const COOKIE_OPTIONS: CookieOptions = config.COOKIE_DOMAIN
+  ? {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      domain: config.COOKIE_DOMAIN,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    }
+  : {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
 
 function signToken(userId: string): string {
   return jwt.sign({ id: userId }, config.JWT_SECRET, { expiresIn: "1h" });
@@ -64,6 +76,7 @@ authRouter.post(
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        avatar: user.avatar,
       });
     } catch (err) {
       console.error("Error during registration:", err);
@@ -104,6 +117,7 @@ authRouter.post(
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        avatar: user.avatar,
       });
     } catch (err) {
       console.error("Error during login:", err);
@@ -111,6 +125,38 @@ authRouter.post(
     }
   },
 );
+
+authRouter.get(
+  "/me",
+  authMiddleware,
+  async (
+    req: Request,
+    res: Response<AuthResponseBody | ErrorResponseBody>,
+  ) => {
+    try {
+      const userId = (req as any).user.id;
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      res.status(200).json({
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+      });
+    } catch (err) {
+      console.error("Error fetching current user:", err);
+      res.status(500).json({ error: "Failed to fetch current user" });
+    }
+  },
+);
+
+authRouter.post("/logout", (req: Request, res: Response) => {
+  res.clearCookie("token", COOKIE_OPTIONS);
+  res.status(200).json({ ok: true });
+});
 
 authRouter.get(
   "/google",
@@ -151,7 +197,7 @@ authRouter.get(
       const token = signToken(user._id.toString());
       res.cookie("token", token, COOKIE_OPTIONS);
 
-      res.redirect("http://localhost:5173");
+      res.redirect(config.FRONTEND_URL);
     } catch (err) {
       console.error("Error during Google authentication:", err);
       res.redirect("/");

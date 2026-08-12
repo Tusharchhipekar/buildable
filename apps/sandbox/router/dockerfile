@@ -1,10 +1,25 @@
-FROM oven/bun:1
-
+FROM oven/bun:1 AS base
 WORKDIR /app
 
+# Prune the monorepo down to just this app + the workspace packages it
+# depends on, so later layers don't depend on unrelated apps' files.
+FROM base AS pruner
 COPY . .
+RUN bunx turbo prune @repo/router --docker
 
+# Install deps from the pruned lockfile/package.jsons only — this layer is
+# cached across builds unless a dependency actually changes, so editing
+# app source no longer forces a full reinstall.
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile
+
+FROM base AS runtime
+# Copy everything installer produced (bun nests some deps under each
+# workspace's own node_modules rather than hoisting all of them to the
+# root), then overlay the real source on top.
+COPY --from=installer /app ./
+COPY --from=pruner /app/out/full/ .
 
 EXPOSE 3000
 

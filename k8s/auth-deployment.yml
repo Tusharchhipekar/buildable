@@ -72,7 +72,13 @@ spec:
           valueFrom:
             secretKeyRef:
               name: jwt
-              key: JWT_SECRET 
+              key: JWT_SECRET
+
+        - name:  COOKIE_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: jwt
+              key: COOKIE_DOMAIN
 
         - name:  AUTH_PORT
           valueFrom:

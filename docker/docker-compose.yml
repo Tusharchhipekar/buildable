@@ -4,15 +4,14 @@ services:
     container_name: buildable_mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_DB}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,6 +30,155 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: buildable_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth:
+    build:
+      context: ..
+      dockerfile: apps/auth/dockerfile
+    container_name: buildable_auth
+    restart: unless-stopped
+    environment:
+      AUTH_PORT: "3000"
+      MONGO_URL: "mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/buildable-auth?authSource=admin"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID:?AUTH_GOOGLE_CLIENT_ID is required}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET:?AUTH_GOOGLE_CLIENT_SECRET is required}
+      # nginx here is on 8080, not 80 (see nginx service comment) — the
+      # relative default callbackURL would otherwise resolve against
+      # whatever Host header the request arrives with and land on the
+      # wrong port. Must also be registered as an authorized redirect URI
+      # in Google Cloud Console for this OAuth client.
+      GOOGLE_CALLBACK_URL: "http://127.0.0.1:8080/api/auth/google/callback"
+      # Google's redirect after consent lands the browser directly on
+      # GOOGLE_CALLBACK_URL's host (127.0.0.1), bypassing the SPA/vite
+      # entirely. If this pointed at "localhost:5173" instead, the
+      # just-set auth cookie (scoped to 127.0.0.1) would be invisible once
+      # redirected there — different hosts don't share cookies even when
+      # they resolve to the same machine. Access the app via 127.0.0.1:5173
+      # (not localhost:5173) for this to work.
+      FRONTEND_URL: "http://127.0.0.1:5173"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672"
+    ports:
+      - "3001:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  notification:
+    build:
+      context: ..
+      dockerfile: apps/notification/dockerfile
+    container_name: buildable_notification
+    restart: unless-stopped
+    environment:
+      NOTIFICATION_PORT: "4000"
+      EMAIL_USER: ${EMAIL_USER:?EMAIL_USER is required}
+      GOOGLE_CLIENT_ID: ${NOTIFICATION_GOOGLE_CLIENT_ID:?NOTIFICATION_GOOGLE_CLIENT_ID is required}
+      GOOGLE_CLIENT_SECRET: ${NOTIFICATION_GOOGLE_CLIENT_SECRET:?NOTIFICATION_GOOGLE_CLIENT_SECRET is required}
+      GOOGLE_REFRESH_TOKEN: ${GOOGLE_REFRESH_TOKEN:?GOOGLE_REFRESH_TOKEN is required}
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672"
+    ports:
+      - "4000:4000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  ai-orchestration:
+    build:
+      context: ..
+      dockerfile: apps/ai-orchestration/dockerfile
+    container_name: buildable_ai_orchestration
+    restart: unless-stopped
+    environment:
+      AI_PORT: "3000"
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    ports:
+      - "3002:3000"
+
+  sandbox-server:
+    build:
+      context: ..
+      dockerfile: apps/sandbox/server/dockerfile
+    container_name: buildable_sandbox_server
+    restart: unless-stopped
+    environment:
+      SANDBOX_PORT: "3000"
+      SANDBOX_MONGO_URL: "mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/buildable-sandbox?authSource=admin"
+      MONGO_URL: "mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/buildable-sandbox?authSource=admin"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      REDIS_URL: "redis://redis:6379"
+      AWS_REGION: "unused"
+      AWS_ACCESS_KEY_ID: "unused"
+      AWS_SECRET_ACCESS_KEY: "unused"
+    ports:
+      - "3003:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sandbox-router:
+    build:
+      context: ..
+      dockerfile: apps/sandbox/router/dockerfile
+    container_name: buildable_sandbox_router
+    restart: unless-stopped
+    environment:
+      ROUTER_PORT: "3000"
+      REDIS_URL: "redis://redis:6379"
+    ports:
+      - "3004:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: buildable_nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+      - "5173:5173"
+    depends_on:
+      - auth
+      - ai-orchestration
+      - sandbox-server
+      - sandbox-router
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: apps/frontend/dockerfile
+    container_name: buildable_frontend
+    restart: unless-stopped
+    network_mode: "service:nginx"
+    depends_on:
+      - nginx
+
 volumes:
   mongo_data:
   redis_data:
+  rabbitmq_data:
