@@ -1,0 +1,39 @@
+# Dependencies
+**/node_modules
+
+# Version control
+.git
+
+# Turborepo
+**/.turbo
+
+# Build output
+**/dist
+**/dist-ssr
+**/build
+
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Editor/IDE
+**/.vscode
+**/.cursor
+**/.idea
+**/*.swp
+**/*.swo
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+**/*.log
+
+# Testing
+**/coverage
+
+# Local infra / k8s manifests — not needed in any image, and k8s/secret.yml holds live local secrets
+docker
+k8s
