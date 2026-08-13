@@ -8,6 +8,7 @@ import http from "http";
 import morgan from "morgan";
 import type { Socket } from "net";
 import { createProxyServer } from "httpxy";
+import { isAuthorizedForAgent } from "./auth";
 
 export const app = express();
 app.use(morgan("combined"));
@@ -60,35 +61,42 @@ wsProxy.on("error", (err, req, socket) => {
   socket?.destroy();
 });
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   const host: string | undefined = req.headers.host;
   // Extract sandboxId from subdomain
   // Eg : https://regex.localhost:3000 -> sandboxId = regex
   const sandboxId: string | undefined = host?.split(".")[0];
+  const type = host?.split(".")[1];
 
   /**
    * pod1.preview.localhost -> template
    * pod1.agent.localhost -> agent
    **/
 
-  if (host?.split(".")[1] == "agent") {
-    return getAgentProxy(sandboxId!)(req, res, next);
-  } else if (host?.split(".")[1] == "preview") {
-    return getProxy(sandboxId!)(req, res, next);
-  } else {
-    next();
+  if (!sandboxId || !type) {
+    return next();
   }
 
-  if (!sandboxId) {
-    return res
-      .status(400)
-      .json({ error: "Unable to resolve sandboxId from host" });
+  if (type === "agent") {
+    // .agent exposes file read/write and a shell into the sandbox pod —
+    // only the project owner (verified via JWT + the userId recorded on
+    // the sandbox at creation time) may reach it.
+    if (!(await isAuthorizedForAgent(req, sandboxId))) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    return getAgentProxy(sandboxId)(req, res, next);
   }
+
+  if (type === "preview") {
+    return getProxy(sandboxId)(req, res, next);
+  }
+
+  next();
 });
 
 export const server = http.createServer(app);
 
-server.on("upgrade", (req, socket, head) => {
+server.on("upgrade", async (req, socket, head) => {
   const host = req.headers.host;
 
   if (!host) {
@@ -108,8 +116,10 @@ server.on("upgrade", (req, socket, head) => {
   );
 
   if (type === "agent") {
-    // const proxy = getAgentProxy(sandboxId!);
-    // proxy.upgrade(req, socket as Socket, head);
+    if (!sandboxId || !(await isAuthorizedForAgent(req, sandboxId))) {
+      socket.destroy();
+      return;
+    }
     wsProxy
       .ws(
         req,

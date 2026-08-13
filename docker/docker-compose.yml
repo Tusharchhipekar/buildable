@@ -100,8 +100,12 @@ services:
       AI_PORT: "3000"
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:?MISTRAL_API_KEY is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      MONGO_URL: "mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/buildable-sandbox?authSource=admin"
     ports:
       - "3002:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   sandbox-server:
     build:
@@ -141,6 +145,7 @@ services:
     environment:
       ROUTER_PORT: "3000"
       REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     ports:
       - "3004:3000"
     depends_on:

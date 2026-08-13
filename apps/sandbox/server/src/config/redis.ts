@@ -6,11 +6,12 @@ import { config } from "./config";
 const redis = new Redis(config.REDIS_URL);
 const subscriber = new Redis(config.REDIS_URL);
 
-export async function createSandboxKey(sandboxId: string) {
+export async function createSandboxKey(sandboxId: string, userId: string) {
   await redis.set(
     `sandbox:${sandboxId}`,
     JSON.stringify({
       status: "active",
+      userId,
     }),
     "EX",
     60 * 120,

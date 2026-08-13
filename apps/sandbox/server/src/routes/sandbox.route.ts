@@ -53,7 +53,7 @@ router.post("/start", authMiddleware, async (req, res) => {
     await Promise.all([
       createPod(sandboxId, projectId),
       createService(sandboxId),
-      createSandboxKey(sandboxId),
+      createSandboxKey(sandboxId, (req as any).user.id),
     ]);
   } catch (err) {
     console.error("Failed to create sandbox, rolling back:", err);

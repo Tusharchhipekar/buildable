@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { AIMessage } from "@langchain/core/messages";
+import type { projectModel } from "@repo/mongodb";
 import { agent } from "../agent/code.agent";
 import { callWithRateLimit } from "../agent/rateLimiter";
 
@@ -7,6 +8,21 @@ const agentRouter = Router();
 
 agentRouter.post("/invoke", async (req: Request, res: Response) => {
   const { message, projectId } = req.body;
+  const userId = (req as any).user?.id;
+
+  if (!projectId) {
+    return res.status(400).json({ error: "projectId is required" });
+  }
+
+  let project;
+  try {
+    project = await projectModel.findOne({ _id: projectId, user: userId });
+  } catch {
+    return res.status(404).json({ error: "Project not found or access denied" });
+  }
+  if (!project) {
+    return res.status(404).json({ error: "Project not found or access denied" });
+  }
 
   res.writeHead(200, {
     "Content-Type": "text/event-stream",

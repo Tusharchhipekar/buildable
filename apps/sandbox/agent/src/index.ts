@@ -9,12 +9,18 @@ import pty from "node-pty";
 import os from "os";
 import cors from "cors";
 
-// The initContainer seeds the whole monorepo into /workspace, but the
-// vite app that actually runs (@repo/sandbox-template) lives nested at
-// apps/sandbox/template — that's the real project root the file API and
-// terminal should operate on, not the volume root.
+
 const WORKSPACE_DIR = "/workspace/apps/sandbox/template";
 export const app = express();
+
+
+function resolveWorkspacePath(file: string): string {
+  const resolved = path.resolve(WORKSPACE_DIR, file);
+  if (resolved !== WORKSPACE_DIR && !resolved.startsWith(WORKSPACE_DIR + path.sep)) {
+    throw new Error(`Path "${file}" escapes the workspace`);
+  }
+  return resolved;
+}
 
 app.use(morgan("dev"));
 app.use(express.json());
@@ -148,16 +154,15 @@ app.get("/read-files", async (req, res) => {
 
   const results = await Promise.all(
     fileList.map(async (file) => {
-      const filePath = path.join(WORKSPACE_DIR, file);
       try {
+        const filePath = resolveWorkspacePath(file);
         const content = await fs.promises.readFile(filePath, "utf-8");
         return {
           [filePath.replace(WORKSPACE_DIR, "")]: content,
         };
       } catch (err: any) {
         return {
-          [filePath.replace(WORKSPACE_DIR, "")]:
-            `Error reading file: ${err.message}`,
+          [file]: `Error reading file: ${err.message}`,
         };
       }
     }),
@@ -187,10 +192,8 @@ app.patch("/update-files", async (req, res) => {
   const results = await Promise.all(
     updates.map(async (update) => {
       const { file, content } = update;
-      const filePath = path.join(WORKSPACE_DIR, file);
       try {
-        console.log(path.dirname(filePath), filePath);
-
+        const filePath = resolveWorkspacePath(file);
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
         await fs.promises.writeFile(filePath, content, "utf-8");
         return {
@@ -198,7 +201,7 @@ app.patch("/update-files", async (req, res) => {
         };
       } catch (err: any) {
         return {
-          [filePath]: `Error updating file: ${err.message}`,
+          [file]: `Error updating file: ${err.message}`,
         };
       }
     }),
@@ -228,8 +231,8 @@ app.post("/create-files", async (req, res) => {
   const results = await Promise.all(
     files.map(async (fileObj) => {
       const { file, content } = fileObj;
-      const filePath = path.join(WORKSPACE_DIR, file);
       try {
+        const filePath = resolveWorkspacePath(file);
         await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
         await fs.promises.writeFile(filePath, content, "utf-8");
         return {
@@ -237,7 +240,7 @@ app.post("/create-files", async (req, res) => {
         };
       } catch (err: any) {
         return {
-          [filePath]: `Error creating file: ${err.message}`,
+          [file]: `Error creating file: ${err.message}`,
         };
       }
     }),
