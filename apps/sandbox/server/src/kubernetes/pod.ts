@@ -59,7 +59,8 @@ export async function createPod(sandboxId: string, projectId: any) {
         },
         {
           image: "agent",
-          imagePullPolicy: "IfNotPresent",
+
+          imagePullPolicy: "Always",
           name: "agent-container",
           ports: [
             {

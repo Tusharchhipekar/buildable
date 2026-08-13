@@ -80,6 +80,12 @@ spec:
               name: jwt
               key: COOKIE_DOMAIN
 
+        - name:  FRONTEND_URL
+          valueFrom:
+            secretKeyRef:
+              name: jwt
+              key: FRONTEND_URL
+
         - name:  AUTH_PORT
           valueFrom:
             secretKeyRef:

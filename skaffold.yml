@@ -7,6 +7,14 @@ build:
 
 
   artifacts:
+    - image: frontend
+      context: .
+      docker:
+        dockerfile: apps/frontend/dockerfile
+      sync:
+        infer:
+          - "apps/frontend/src/**"
+
     - image: ai-orchestration
       context: .
       docker:
@@ -83,6 +91,9 @@ manifests:
 
      - k8s/auth-deployment.yml
      - k8s/auth-service.yml
+
+     - k8s/frontend-deployment.yml
+     - k8s/frontend-service.yml
 
      - k8s/notification-deployment.yml
      - k8s/notification-service.yml

@@ -69,6 +69,16 @@ spec:
             port: 
               number: 80   
               
+   - http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+
    - host: "*.preview.localhost"
      http:
       paths:
