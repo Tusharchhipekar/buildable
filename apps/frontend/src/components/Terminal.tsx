@@ -6,15 +6,20 @@ import { io, Socket } from "socket.io-client";
 
 interface TerminalProps {
   sandboxId?: string;
+  generating?: boolean;
 }
 
-export default function Terminal({ sandboxId }: TerminalProps) {
+export default function Terminal({ sandboxId, generating }: TerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const generatingRef = useRef(generating);
+  useEffect(() => {
+    generatingRef.current = generating;
+  }, [generating]);
 
   const initTerminal = useCallback(() => {
     if (!containerRef.current || termRef.current) return;
@@ -97,13 +102,20 @@ export default function Terminal({ sandboxId }: TerminalProps) {
 
         socket.on("disconnect", () => {
           setConnected(false);
-          term.writeln("\r\n\x1b[33m⚠ Disconnected. Reconnecting...\x1b[0m");
+        
+          if (!generatingRef.current) {
+            term.writeln("\r\n\x1b[33m⚠ Disconnected. Reconnecting...\x1b[0m");
+          }
         });
 
         socket.on("connect_error", (err: Error) => {
           setConnected(false);
           setError("Connection failed");
-          term.writeln(`\r\n\x1b[31m✗ Connection error: ${err.message}\x1b[0m`);
+          if (!generatingRef.current) {
+            term.writeln(
+              `\r\n\x1b[31m✗ Connection error: ${err.message}\x1b[0m`,
+            );
+          }
         });
 
         socket.on("terminal-output", (data: string) => {
@@ -185,9 +197,16 @@ export default function Terminal({ sandboxId }: TerminalProps) {
           <span className="text-xs font-medium" style={{ color: "#958e9a" }}>
             Terminal
           </span>
+          {generating && (
+            <span
+              className="w-2.5 h-2.5 rounded-full border-2 border-t-transparent animate-spin shrink-0"
+              style={{ borderColor: "#d7baff", borderTopColor: "transparent" }}
+              title="Applying changes…"
+            />
+          )}
         </div>
         <div className="flex items-center gap-2">
-          {error && (
+          {error && !generating && (
             <span className="text-xs" style={{ color: "#ef4444" }}>
               {error}
             </span>

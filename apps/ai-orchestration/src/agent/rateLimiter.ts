@@ -19,9 +19,13 @@ export function createRateLimiter(minIntervalMs = 20_000, maxRetries = 4) {
     await run;
   }
 
-  function isRateLimitError(err: unknown): boolean {
+  function isRetryableError(err: unknown): boolean {
     const message = err instanceof Error ? err.message : String(err);
+    const isTimeout =
+      (err instanceof DOMException && err.name === "TimeoutError") ||
+      message.toLowerCase().includes("timed out");
     return (
+      isTimeout ||
       message.includes("429") ||
       message.toLowerCase().includes("rate limit") ||
       message.toLowerCase().includes("rate_limited")
@@ -34,10 +38,10 @@ export function createRateLimiter(minIntervalMs = 20_000, maxRetries = 4) {
       try {
         return await fn();
       } catch (err) {
-        if (isRateLimitError(err) && attempt < maxRetries) {
+        if (isRetryableError(err) && attempt < maxRetries) {
           const backoff = RETRY_BACKOFF_MS[attempt] ?? 60_000;
           console.warn(
-            `Rate limited by model provider (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${backoff / 1000}s...`,
+            `Model provider call failed (${err instanceof Error ? err.message : String(err)}), attempt ${attempt + 1}/${maxRetries + 1}, retrying in ${backoff / 1000}s...`,
           );
           await wait(backoff);
           continue;

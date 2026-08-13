@@ -1,10 +1,16 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface PreviewFrameProps {
   previewUrl?: string;
+  generating?: boolean;
+  autoReloadKey?: unknown;
 }
 
-export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
+export default function PreviewFrame({
+  previewUrl,
+  generating,
+  autoReloadKey,
+}: PreviewFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -13,6 +19,16 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
     setLoading(true);
     setRefreshKey((k) => k + 1);
   };
+
+  // Auto-reload the preview whenever the AI finishes applying changes.
+  const skipFirst = useRef(true);
+  useEffect(() => {
+    if (skipFirst.current) {
+      skipFirst.current = false;
+      return;
+    }
+    handleRefresh();
+  }, [autoReloadKey]);
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -127,6 +143,31 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
           title="Sandbox Preview"
           onLoad={() => setLoading(false)}
         />
+        {generating && (
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{ background: "#151317" }}
+          >
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-lg"
+              style={{
+                background: "rgba(21,19,23,0.9)",
+                border: "1px solid #30363d",
+              }}
+            >
+              <div
+                className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin shrink-0"
+                style={{
+                  borderColor: "#d7baff",
+                  borderTopColor: "transparent",
+                }}
+              />
+              <span className="text-xs" style={{ color: "#ccc4d0" }}>
+                Applying changes…
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

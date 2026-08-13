@@ -156,6 +156,7 @@ interface FileExplorerProps {
   activeFile?: string | null;
   onFileSelect: (path: string) => void;
   refreshKey?: unknown;
+  generating?: boolean;
 }
 
 export default function FileExplorer({
@@ -163,6 +164,7 @@ export default function FileExplorer({
   activeFile,
   onFileSelect,
   refreshKey,
+  generating,
 }: FileExplorerProps) {
   const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -215,10 +217,17 @@ export default function FileExplorer({
         style={{ borderBottom: "1px solid #30363d" }}
       >
         <span
-          className="text-xs font-semibold uppercase tracking-widest"
+          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest"
           style={{ color: "#958e9a" }}
         >
           Explorer
+          {generating && (
+            <span
+              className="w-2.5 h-2.5 rounded-full border-2 border-t-transparent animate-spin shrink-0"
+              style={{ borderColor: "#d7baff", borderTopColor: "transparent" }}
+              title="Applying changes…"
+            />
+          )}
         </span>
         <button
           onClick={fetchFiles}
@@ -244,7 +253,7 @@ export default function FileExplorer({
 
       {/* File Tree */}
       <div className="flex-1 overflow-y-auto py-1">
-        {loading ? (
+        {loading || (error && generating) ? (
           <div className="flex items-center justify-center h-20">
             <div
               className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"

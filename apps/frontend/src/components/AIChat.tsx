@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
-type ActivityType = "reading" | "updating" | "success" | "info";
+type ActivityType = "reading" | "updating" | "success" | "info" | "error";
 
 interface ActivityLine {
   type: ActivityType;
@@ -57,11 +57,13 @@ function ActivityLog({ lines }: { lines: ActivityLine[] }) {
                 ? "✏️"
                 : line.type === "success"
                   ? "✅"
-                  : "💬"}
+                  : line.type === "error"
+                    ? "❌"
+                    : "💬"}
           </span>
           <span
             className="text-xs font-mono break-all"
-            style={{ color: "#958e9a" }}
+            style={{ color: line.type === "error" ? "#f87171" : "#958e9a" }}
           >
             {line.text}
           </span>
@@ -128,6 +130,7 @@ function Message({ msg }: { msg: ChatMessage }) {
 
 function parseActivityLine(line: string): ActivityLine | null {
   if (!line.trim()) return null;
+  if (line.startsWith("Error:")) return { type: "error", text: line };
   if (line.startsWith("Reading files")) return { type: "reading", text: line };
   if (line.startsWith("Updating files"))
     return { type: "updating", text: line };
@@ -139,12 +142,14 @@ function parseActivityLine(line: string): ActivityLine | null {
 interface AiChatProps {
   sandboxId?: string | null;
   onFilesChanged?: () => void;
+  onGeneratingChange?: (generating: boolean) => void;
   initialPrompt?: string | null;
 }
 
 export default function AiChat({
   sandboxId,
   onFilesChanged,
+  onGeneratingChange,
   initialPrompt,
 }: AiChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -172,6 +177,7 @@ export default function AiChat({
 
     setInput("");
     setStreaming(true);
+    onGeneratingChange?.(true);
 
     const userMsg: ChatMessage = {
       role: "user",
@@ -241,8 +247,10 @@ export default function AiChat({
           const parsed = parseActivityLine(line);
           if (parsed) {
             activityLines = [...activityLines, parsed];
-            // If looks like final AI text response
-            if (parsed.type === "info" && line.length > 30) {
+            if (parsed.type === "error") {
+              aiContent = parsed.text;
+            } else if (parsed.type === "info" && line.length > 30) {
+              
               aiContent = line;
             }
           }
@@ -250,7 +258,6 @@ export default function AiChat({
         }
       }
 
-      // If no textual content came through, construct a summary
       if (!aiContent) {
         const updates = activityLines.filter((l) => l.type === "success");
         aiContent = updates.length
@@ -271,7 +278,7 @@ export default function AiChat({
         ),
       );
 
-      // Trigger file explorer refresh
+
       onFilesChanged?.();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -289,8 +296,9 @@ export default function AiChat({
       );
     } finally {
       setStreaming(false);
+      onGeneratingChange?.(false);
     }
-  }, [input, streaming, sandboxId, onFilesChanged]);
+  }, [input, streaming, sandboxId, onFilesChanged, onGeneratingChange]);
 
   const sentInitialPrompt = useRef(false);
   useEffect(() => {

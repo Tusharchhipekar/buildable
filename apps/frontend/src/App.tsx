@@ -69,6 +69,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("preview");
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const [fileRefreshKey, setFileRefreshKey] = useState(0);
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
+  const [generating, setGenerating] = useState(false);
 
   const [terminalHeight, setTerminalHeight] = useState(220);
   const isDragging = useRef(false);
@@ -91,6 +93,7 @@ export default function App() {
 
   const handleFilesChanged = useCallback(() => {
     setFileRefreshKey((k) => k + 1);
+    setPreviewRefreshKey((k) => k + 1);
   }, []);
 
   const handleBackToProjects = useCallback(() => {
@@ -177,6 +180,7 @@ export default function App() {
           activeFile={activeFile}
           onFileSelect={handleFileSelect}
           refreshKey={fileRefreshKey}
+          generating={generating}
         />
 
         {/* Center — main content + terminal */}
@@ -184,7 +188,11 @@ export default function App() {
           {/* Main content area */}
           <div className="flex-1 overflow-hidden">
             {activeTab === "preview" ? (
-              <PreviewFrame previewUrl={previewUrl} />
+              <PreviewFrame
+                previewUrl={previewUrl}
+                generating={generating}
+                autoReloadKey={previewRefreshKey}
+              />
             ) : (
               <FileViewer agentBase={agentBase} filePath={activeFile} />
             )}
@@ -214,7 +222,7 @@ export default function App() {
             className="shrink-0 overflow-hidden"
             style={{ height: `${terminalHeight}px` }}
           >
-            <Terminal sandboxId={sandboxId} />
+            <Terminal sandboxId={sandboxId} generating={generating} />
           </div>
         </div>
 
@@ -223,6 +231,7 @@ export default function App() {
           <AiChat
             sandboxId={sandboxId}
             onFilesChanged={handleFilesChanged}
+            onGeneratingChange={setGenerating}
             initialPrompt={initialPrompt}
           />
         </div>

@@ -50,7 +50,9 @@ agentRouter.post("/invoke", async (req, res) => {
     res.end();
   } catch (error) {
     console.error("Error invoking agent:", error);
+    const message = error instanceof Error ? error.message : String(error);
     if (res.headersSent) {
+      res.write(`Error: ${message}\n`);
       res.end();
     } else {
       res.status(500).json({ error: "Failed to invoke agent" });
