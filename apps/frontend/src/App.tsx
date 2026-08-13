@@ -34,6 +34,7 @@ export default function App() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [sandbox, setSandbox] = useState<SandboxState | null>(null);
   const [status, setStatus] = useState<Status>("ready");
+  const [initialPrompt, setInitialPrompt] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -74,15 +75,19 @@ export default function App() {
   const dragStartY = useRef(0);
   const dragStartH = useRef(0);
 
-  const handleSandboxCreated = useCallback((data: SandboxCreatedData) => {
-    const agentBase = `http://${data.sandboxId}.agent.localhost`;
-    setSandbox({
-      sandboxId: data.sandboxId,
-      previewUrl: data.previewUrl,
-      agentBase,
-    });
-    setStatus("ready");
-  }, []);
+  const handleSandboxCreated = useCallback(
+    (data: SandboxCreatedData, prompt?: string) => {
+      const agentBase = `http://${data.sandboxId}.agent.localhost`;
+      setSandbox({
+        sandboxId: data.sandboxId,
+        previewUrl: data.previewUrl,
+        agentBase,
+      });
+      setInitialPrompt(prompt || null);
+      setStatus("ready");
+    },
+    [],
+  );
 
   const handleFilesChanged = useCallback(() => {
     setFileRefreshKey((k) => k + 1);
@@ -146,7 +151,7 @@ export default function App() {
   return (
     <div
       className="flex flex-col h-full w-full overflow-hidden"
-      style={{ background: "#070b14" }}
+      style={{ background: "#151317" }}
     >
       {/* Top bar */}
       <TopBar
@@ -182,9 +187,9 @@ export default function App() {
             className="shrink-0 flex items-center justify-center cursor-row-resize select-none"
             style={{
               height: "6px",
-              background: "#0d1424",
-              borderTop: "1px solid #1e2d45",
-              borderBottom: "1px solid #1e2d45",
+              background: "#1d1b1f",
+              borderTop: "1px solid #30363d",
+              borderBottom: "1px solid #30363d",
               zIndex: 10,
             }}
             onMouseDown={handleDragStart}
@@ -192,7 +197,7 @@ export default function App() {
           >
             <div
               className="w-12 h-0.5 rounded-full"
-              style={{ background: "#2a3f60" }}
+              style={{ background: "#373438" }}
             />
           </div>
 
@@ -207,7 +212,11 @@ export default function App() {
 
         {/* Right — AI Chat */}
         <div className="shrink-0 overflow-hidden" style={{ width: "340px" }}>
-          <AiChat sandboxId={sandboxId} onFilesChanged={handleFilesChanged} />
+          <AiChat
+            sandboxId={sandboxId}
+            onFilesChanged={handleFilesChanged}
+            initialPrompt={initialPrompt}
+          />
         </div>
       </div>
     </div>

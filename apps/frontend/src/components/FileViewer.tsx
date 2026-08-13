@@ -61,7 +61,7 @@ export default function FileViewer({ agentBase, filePath }: FileViewerProps) {
     return (
       <div
         className="flex flex-col items-center justify-center h-full gap-3"
-        style={{ color: "#334155" }}
+        style={{ color: "#958e9a" }}
       >
         <svg
           width="40"
@@ -86,25 +86,25 @@ export default function FileViewer({ agentBase, filePath }: FileViewerProps) {
         className="flex items-center gap-2 px-3 shrink-0"
         style={{
           height: "36px",
-          background: "#070b14",
-          borderBottom: "1px solid #1e2d45",
+          background: "#151317",
+          borderBottom: "1px solid #30363d",
         }}
       >
         <div
           className="flex items-center gap-2 px-3 py-1 rounded-t"
           style={{
-            background: "#0d1424",
-            border: "1px solid #1e2d45",
+            background: "#1d1b1f",
+            border: "1px solid #30363d",
             borderBottom: "none",
             marginBottom: "-1px",
           }}
         >
-          <span className="text-xs" style={{ color: "#94a3b8" }}>
+          <span className="text-xs" style={{ color: "#ccc4d0" }}>
             {filePath.split("/").pop()}
           </span>
           <span
             className="text-xs px-1 rounded"
-            style={{ background: "rgba(34,211,238,0.08)", color: "#475569" }}
+            style={{ background: "rgba(215,186,255,0.08)", color: "#958e9a" }}
           >
             {getLanguage(filePath)}
           </span>
@@ -114,14 +114,14 @@ export default function FileViewer({ agentBase, filePath }: FileViewerProps) {
       {/* Content */}
       <div
         className="flex-1 overflow-auto relative"
-        style={{ background: "#070b14" }}
+        style={{ background: "#151317" }}
       >
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="w-6 h-6 rounded-full border-2 border-t-transparent"
               style={{
-                borderColor: "#22d3ee",
+                borderColor: "#d7baff",
                 borderTopColor: "transparent",
                 animation: "spin 0.8s linear infinite",
               }}
@@ -137,7 +137,7 @@ export default function FileViewer({ agentBase, filePath }: FileViewerProps) {
           <pre
             className="p-4 text-xs leading-relaxed overflow-auto h-full"
             style={{
-              color: "#94a3b8",
+              color: "#ccc4d0",
               fontFamily: '"JetBrains Mono", "Fira Code", monospace',
               margin: 0,
               whiteSpace: "pre-wrap",

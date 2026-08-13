@@ -1,4 +1,5 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect } from "react";
+import NewProjectPrompt from "./NewProjectPrompt";
 
 interface User {
   id: string;
@@ -20,7 +21,7 @@ interface SandboxData {
 
 interface DashboardProps {
   user: User | null;
-  onSandboxCreated: (sandboxData: SandboxData) => void;
+  onSandboxCreated: (sandboxData: SandboxData, initialPrompt?: string) => void;
   onLogout: () => void;
 }
 
@@ -39,6 +40,11 @@ function timeAgo(iso?: string): string | null {
   return `Created ${Math.floor(months / 12)}y ago`;
 }
 
+function titleFromPrompt(message: string): string {
+  const oneLine = message.replace(/\s+/g, " ").trim();
+  return oneLine.length > 60 ? oneLine.slice(0, 57) + "…" : oneLine;
+}
+
 export default function Dashboard({
   user,
   onSandboxCreated,
@@ -51,9 +57,9 @@ export default function Dashboard({
   );
 
   const [creating, setCreating] = useState(false);
-  const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/sandbox/project", { credentials: "include" })
@@ -64,6 +70,31 @@ export default function Dashboard({
   }, []);
 
   const isAnyBusy = openingProjectId !== null || submitting;
+
+  const handleDeleteProject = async (
+    e: React.MouseEvent,
+    projectId: string,
+  ) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this project? This can't be undone.")) return;
+
+    setDeletingId(projectId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/sandbox/project/${projectId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`Failed to delete project (${res.status})`);
+      setProjects((prev) => prev.filter((p) => p._id !== projectId));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to delete project",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleOpenProject = async (projectId: string) => {
     setOpeningProjectId(projectId);
@@ -83,13 +114,7 @@ export default function Dashboard({
     }
   };
 
-  const handleCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    const projectTitle = title.trim();
-    if (!projectTitle) {
-      setError("Please enter a project name");
-      return;
-    }
+  const handleCreateFromPrompt = async (message: string) => {
     setSubmitting(true);
     setError(null);
     try {
@@ -97,7 +122,7 @@ export default function Dashboard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ title: projectTitle }),
+        body: JSON.stringify({ title: titleFromPrompt(message) }),
       });
       if (!projectRes.ok)
         throw new Error(`Failed to create project (${projectRes.status})`);
@@ -112,7 +137,7 @@ export default function Dashboard({
       });
       if (!sandboxRes.ok)
         throw new Error(`Failed to start sandbox (${sandboxRes.status})`);
-      onSandboxCreated(await sandboxRes.json());
+      onSandboxCreated(await sandboxRes.json(), message);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create project",
@@ -120,6 +145,21 @@ export default function Dashboard({
       setSubmitting(false);
     }
   };
+
+  if (creating) {
+    return (
+      <NewProjectPrompt
+        userName={user?.name}
+        submitting={submitting}
+        error={error}
+        onCreate={handleCreateFromPrompt}
+        onCancel={() => {
+          setCreating(false);
+          setError(null);
+        }}
+      />
+    );
+  }
 
   const avatarInitial = (user?.name || user?.email || "?")
     .charAt(0)
@@ -205,97 +245,88 @@ export default function Dashboard({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {/* Start new project card */}
-          <div
+          <button
+            type="button"
+            onClick={() => {
+              setCreating(true);
+              setError(null);
+            }}
             className="rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[180px] cursor-pointer transition-colors"
             style={{
               border: "1px dashed #373438",
               background: "transparent",
             }}
-            onClick={() => !creating && setCreating(true)}
           >
-            {creating ? (
-              <form
-                onSubmit={handleCreate}
-                className="w-full flex flex-col gap-3"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <input
-                  autoFocus
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Project name…"
-                  disabled={submitting}
-                  className="w-full rounded-lg px-3 py-2 text-sm outline-none"
-                  style={{
-                    background: "#1d1b1f",
-                    border: "1px solid #373438",
-                    color: "#e7e1e7",
-                  }}
-                />
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 rounded-lg py-2 text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ background: "#d7baff", color: "#3c245e" }}
-                  >
-                    {submitting ? "Creating…" : "Create"}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => {
-                      setCreating(false);
-                      setTitle("");
-                      setError(null);
-                    }}
-                    className="flex-1 rounded-lg py-2 text-sm font-medium cursor-pointer"
-                    style={{
-                      background: "#1d1b1f",
-                      color: "#ccc4d0",
-                      border: "1px solid #373438",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-xl mb-3"
-                  style={{ border: "1px solid #373438", color: "#d7baff" }}
-                >
-                  +
-                </div>
-                <p
-                  className="text-sm font-semibold"
-                  style={{ color: "#d7baff" }}
-                >
-                  Start New Project
-                </p>
-                <p className="text-xs mt-1" style={{ color: "#958e9a" }}>
-                  Spin up a new sandbox instantly.
-                </p>
-              </>
-            )}
-          </div>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center text-xl mb-3"
+              style={{ border: "1px solid #373438", color: "#d7baff" }}
+            >
+              +
+            </div>
+            <p className="text-sm font-semibold" style={{ color: "#d7baff" }}>
+              Start New Project
+            </p>
+            <p className="text-xs mt-1" style={{ color: "#958e9a" }}>
+              Spin up a new sandbox instantly.
+            </p>
+          </button>
 
           {!projectsLoading &&
             projects.map((project) => {
               const opening = openingProjectId === project._id;
+              const deleting = deletingId === project._id;
               return (
-                <button
+                <div
                   key={project._id}
-                  type="button"
-                  disabled={isAnyBusy}
-                  onClick={() => handleOpenProject(project._id)}
-                  className="rounded-2xl p-6 flex flex-col text-left min-h-[180px] cursor-pointer transition-colors disabled:cursor-not-allowed"
-                  style={{ background: "#211f23", border: "1px solid #30363d" }}
+                  role="button"
+                  tabIndex={0}
+                  aria-disabled={isAnyBusy || deleting}
+                  onClick={() =>
+                    !isAnyBusy && !deleting && handleOpenProject(project._id)
+                  }
+                  onKeyDown={(e) => {
+                    if (
+                      (e.key === "Enter" || e.key === " ") &&
+                      !isAnyBusy &&
+                      !deleting
+                    ) {
+                      e.preventDefault();
+                      handleOpenProject(project._id);
+                    }
+                  }}
+                  className="relative rounded-2xl p-6 flex flex-col text-left min-h-[180px] cursor-pointer transition-colors"
+                  style={{
+                    background: "#211f23",
+                    border: "1px solid #30363d",
+                    opacity: deleting ? 0.5 : 1,
+                    pointerEvents: isAnyBusy || deleting ? "none" : "auto",
+                  }}
                 >
+                  <button
+                    type="button"
+                    title="Delete project"
+                    onClick={(e) => handleDeleteProject(e, project._id)}
+                    className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer transition-colors"
+                    style={{ color: "#958e9a", pointerEvents: "auto" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                      e.currentTarget.style.color = "#fca5a5";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#958e9a";
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
+
                   <h3
-                    className="text-lg font-semibold mb-2"
+                    className="text-lg font-semibold mb-2 pr-8 line-clamp-2"
                     style={{ color: "#e7e1e7" }}
                   >
                     {project.title}
@@ -304,17 +335,37 @@ export default function Dashboard({
                     <span className="text-xs" style={{ color: "#958e9a" }}>
                       {timeAgo(project.createdAt) || ""}
                     </span>
-                    {opening && (
-                      <div
-                        className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
-                        style={{
-                          borderColor: "#d7baff",
-                          borderTopColor: "transparent",
-                        }}
-                      />
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isAnyBusy && !deleting)
+                          handleOpenProject(project._id);
+                      }}
+                      className="flex items-center gap-1 text-xs font-semibold cursor-pointer disabled:cursor-not-allowed"
+                      style={{ color: "#d7baff", pointerEvents: "auto" }}
+                      disabled={isAnyBusy || deleting}
+                    >
+                      {opening || deleting ? (
+                        <div
+                          className="w-3.5 h-3.5 rounded-full border-2 border-t-transparent animate-spin"
+                          style={{
+                            borderColor: "#d7baff",
+                            borderTopColor: "transparent",
+                          }}
+                        />
+                      ) : (
+                        <>
+                          View Project
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
                   </div>
-                </button>
+                </div>
               );
             })}
         </div>

@@ -21,8 +21,8 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
         className="flex items-center gap-2 px-3 shrink-0"
         style={{
           height: "36px",
-          background: "#070b14",
-          borderBottom: "1px solid #1e2d45",
+          background: "#151317",
+          borderBottom: "1px solid #30363d",
         }}
       >
         {/* Traffic light dots */}
@@ -45,8 +45,8 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
         <div
           className="flex-1 flex items-center px-3 rounded"
           style={{
-            background: "#0d1424",
-            border: "1px solid #1e2d45",
+            background: "#1d1b1f",
+            border: "1px solid #30363d",
             height: "24px",
           }}
         >
@@ -54,7 +54,7 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
             <div
               className="w-3 h-3 rounded-full border border-t-transparent mr-2 shrink-0"
               style={{
-                borderColor: "#22d3ee",
+                borderColor: "#d7baff",
                 borderTopColor: "transparent",
                 animation: "spin 0.8s linear infinite",
               }}
@@ -62,7 +62,7 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
           )}
           <span
             className="text-xs truncate"
-            style={{ color: "#475569", fontFamily: "monospace" }}
+            style={{ color: "#958e9a", fontFamily: "monospace" }}
           >
             {previewUrl}
           </span>
@@ -72,9 +72,9 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
         <button
           onClick={handleRefresh}
           className="p-1 rounded transition-colors cursor-pointer"
-          style={{ color: "#475569" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#22d3ee")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+          style={{ color: "#958e9a" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#d7baff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#958e9a")}
           title="Refresh preview"
         >
           <svg
@@ -96,9 +96,9 @@ export default function PreviewFrame({ previewUrl }: PreviewFrameProps) {
           target="_blank"
           rel="noreferrer"
           className="p-1 rounded transition-colors cursor-pointer"
-          style={{ color: "#475569" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#22d3ee")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+          style={{ color: "#958e9a" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#d7baff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#958e9a")}
           title="Open in new tab"
         >
           <svg

@@ -21,20 +21,20 @@ export default function Terminal({ sandboxId }: TerminalProps) {
 
     const term = new XTerm({
       theme: {
-        background: "#070b14",
-        foreground: "#e2e8f0",
-        cursor: "#22d3ee",
-        cursorAccent: "#070b14",
-        selectionBackground: "rgba(34,211,238,0.2)",
-        black: "#1e2d45",
+        background: "#151317",
+        foreground: "#e7e1e7",
+        cursor: "#d7baff",
+        cursorAccent: "#151317",
+        selectionBackground: "rgba(215,186,255,0.2)",
+        black: "#30363d",
         red: "#ef4444",
         green: "#10b981",
         yellow: "#f59e0b",
         blue: "#3b82f6",
         magenta: "#a78bfa",
         cyan: "#22d3ee",
-        white: "#e2e8f0",
-        brightBlack: "#334155",
+        white: "#e7e1e7",
+        brightBlack: "#958e9a",
         brightRed: "#f87171",
         brightGreen: "#34d399",
         brightYellow: "#fbbf24",
@@ -160,14 +160,14 @@ export default function Terminal({ sandboxId }: TerminalProps) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#070b14" }}>
+    <div className="flex flex-col h-full" style={{ background: "#151317" }}>
       {/* Terminal toolbar */}
       <div
         className="flex items-center justify-between px-3 shrink-0"
         style={{
           height: "32px",
-          background: "#0d1424",
-          borderBottom: "1px solid #1e2d45",
+          background: "#1d1b1f",
+          borderBottom: "1px solid #30363d",
         }}
       >
         <div className="flex items-center gap-2">
@@ -176,13 +176,13 @@ export default function Terminal({ sandboxId }: TerminalProps) {
             height="12"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#94a3b8"
+            stroke="#ccc4d0"
             strokeWidth="2"
           >
             <polyline points="4 17 10 11 4 5" />
             <line x1="12" y1="19" x2="20" y2="19" />
           </svg>
-          <span className="text-xs font-medium" style={{ color: "#475569" }}>
+          <span className="text-xs font-medium" style={{ color: "#958e9a" }}>
             Terminal
           </span>
         </div>
@@ -200,7 +200,7 @@ export default function Terminal({ sandboxId }: TerminalProps) {
                 boxShadow: `0 0 6px ${connected ? "#10b981" : "#ef4444"}`,
               }}
             />
-            <span className="text-xs" style={{ color: "#475569" }}>
+            <span className="text-xs" style={{ color: "#958e9a" }}>
               {connected ? "Connected" : "Disconnected"}
             </span>
           </div>

@@ -73,7 +73,7 @@ function TreeNode({
           className="flex items-center gap-1.5 w-full text-left px-2 py-0.5 rounded transition-colors duration-100 cursor-pointer"
           style={{
             paddingLeft: `${8 + depth * 14}px`,
-            color: "#94a3b8",
+            color: "#ccc4d0",
             fontSize: "13px",
           }}
           onMouseEnter={(e) =>
@@ -128,20 +128,20 @@ function TreeNode({
       style={{
         paddingLeft: `${8 + depth * 14}px`,
         fontSize: "13px",
-        color: isActive ? "#22d3ee" : "#94a3b8",
-        background: isActive ? "rgba(34,211,238,0.08)" : "transparent",
-        borderLeft: isActive ? "2px solid #22d3ee" : "2px solid transparent",
+        color: isActive ? "#d7baff" : "#ccc4d0",
+        background: isActive ? "rgba(215,186,255,0.08)" : "transparent",
+        borderLeft: isActive ? "2px solid #d7baff" : "2px solid transparent",
       }}
       onMouseEnter={(e) => {
         if (!isActive) {
           e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-          e.currentTarget.style.color = "#e2e8f0";
+          e.currentTarget.style.color = "#e7e1e7";
         }
       }}
       onMouseLeave={(e) => {
         if (!isActive) {
           e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = "#94a3b8";
+          e.currentTarget.style.color = "#ccc4d0";
         }
       }}
     >
@@ -205,27 +205,27 @@ export default function FileExplorer({
       style={{
         width: "220px",
         minWidth: "220px",
-        background: "#0d1424",
-        borderRight: "1px solid #1e2d45",
+        background: "#1d1b1f",
+        borderRight: "1px solid #30363d",
       }}
     >
       {/* Header */}
       <div
         className="flex items-center justify-between px-3 py-2 shrink-0"
-        style={{ borderBottom: "1px solid #1e2d45" }}
+        style={{ borderBottom: "1px solid #30363d" }}
       >
         <span
           className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "#475569" }}
+          style={{ color: "#958e9a" }}
         >
           Explorer
         </span>
         <button
           onClick={fetchFiles}
           className="p-1 rounded transition-colors cursor-pointer"
-          style={{ color: "#475569" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#22d3ee")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+          style={{ color: "#958e9a" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#d7baff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#958e9a")}
           title="Refresh"
         >
           <svg
@@ -248,7 +248,7 @@ export default function FileExplorer({
           <div className="flex items-center justify-center h-20">
             <div
               className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "#22d3ee", borderTopColor: "transparent" }}
+              style={{ borderColor: "#d7baff", borderTopColor: "transparent" }}
             />
           </div>
         ) : error ? (
@@ -281,9 +281,9 @@ export default function FileExplorer({
       {!loading && files.length > 0 && (
         <div
           className="px-3 py-1.5 shrink-0"
-          style={{ borderTop: "1px solid #1e2d45" }}
+          style={{ borderTop: "1px solid #30363d" }}
         >
-          <span className="text-xs" style={{ color: "#334155" }}>
+          <span className="text-xs" style={{ color: "#958e9a" }}>
             {files.length} files
           </span>
         </div>

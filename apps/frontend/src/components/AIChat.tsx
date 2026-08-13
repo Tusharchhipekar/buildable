@@ -24,7 +24,7 @@ function TypingIndicator() {
           key={i}
           className="w-1.5 h-1.5 rounded-full"
           style={{
-            background: "#22d3ee",
+            background: "#d7baff",
             animation: "typing-dot 1.2s ease-in-out infinite",
             animationDelay: `${i * 0.2}s`,
           }}
@@ -39,7 +39,7 @@ function ActivityLog({ lines }: { lines: ActivityLine[] }) {
   return (
     <div
       className="mt-2 rounded overflow-hidden"
-      style={{ background: "rgba(0,0,0,0.3)", border: "1px solid #1e2d45" }}
+      style={{ background: "rgba(0,0,0,0.3)", border: "1px solid #30363d" }}
     >
       {lines.map((line, i) => (
         <div
@@ -47,10 +47,10 @@ function ActivityLog({ lines }: { lines: ActivityLine[] }) {
           className="flex items-start gap-2 px-2 py-1"
           style={{
             borderBottom:
-              i < lines.length - 1 ? "1px solid rgba(30,45,69,0.5)" : "none",
+              i < lines.length - 1 ? "1px solid rgba(48,54,61,0.5)" : "none",
           }}
         >
-          <span className="text-xs shrink-0 mt-px" style={{ color: "#475569" }}>
+          <span className="text-xs shrink-0 mt-px" style={{ color: "#958e9a" }}>
             {line.type === "reading"
               ? "📖"
               : line.type === "updating"
@@ -61,7 +61,7 @@ function ActivityLog({ lines }: { lines: ActivityLine[] }) {
           </span>
           <span
             className="text-xs font-mono break-all"
-            style={{ color: "#64748b" }}
+            style={{ color: "#958e9a" }}
           >
             {line.text}
           </span>
@@ -82,8 +82,8 @@ function Message({ msg }: { msg: ChatMessage }) {
           className="w-7 h-7 rounded-lg shrink-0 mr-2 flex items-center justify-center text-sm"
           style={{
             background:
-              "linear-gradient(135deg, rgba(34,211,238,0.2), rgba(8,145,178,0.1))",
-            border: "1px solid rgba(34,211,238,0.3)",
+              "linear-gradient(135deg, rgba(215,186,255,0.2), rgba(73,49,108,0.1))",
+            border: "1px solid rgba(215,186,255,0.3)",
             marginTop: "2px",
           }}
         >
@@ -97,15 +97,15 @@ function Message({ msg }: { msg: ChatMessage }) {
             isUser
               ? {
                   background:
-                    "linear-gradient(135deg, rgba(34,211,238,0.15), rgba(8,145,178,0.08))",
-                  border: "1px solid rgba(34,211,238,0.25)",
-                  color: "#e2e8f0",
+                    "linear-gradient(135deg, rgba(215,186,255,0.15), rgba(73,49,108,0.08))",
+                  border: "1px solid rgba(215,186,255,0.25)",
+                  color: "#e7e1e7",
                   borderBottomRightRadius: "4px",
                 }
               : {
                   background: "rgba(255,255,255,0.04)",
-                  border: "1px solid #1e2d45",
-                  color: "#cbd5e1",
+                  border: "1px solid #30363d",
+                  color: "#ccc4d0",
                   borderBottomLeftRadius: "4px",
                 }
           }
@@ -115,7 +115,7 @@ function Message({ msg }: { msg: ChatMessage }) {
         {msg.activity && msg.activity.length > 0 && (
           <ActivityLog lines={msg.activity} />
         )}
-        <div className="text-xs mt-1 px-1" style={{ color: "#334155" }}>
+        <div className="text-xs mt-1 px-1" style={{ color: "#958e9a" }}>
           {new Date(msg.time).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -139,9 +139,14 @@ function parseActivityLine(line: string): ActivityLine | null {
 interface AiChatProps {
   sandboxId?: string | null;
   onFilesChanged?: () => void;
+  initialPrompt?: string | null;
 }
 
-export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
+export default function AiChat({
+  sandboxId,
+  onFilesChanged,
+  initialPrompt,
+}: AiChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -161,8 +166,8 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = useCallback(async () => {
-    const text = input.trim();
+  const sendMessage = useCallback(async (override?: string) => {
+    const text = (override ?? input).trim();
     if (!text || streaming || !sandboxId) return;
 
     setInput("");
@@ -287,6 +292,13 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
     }
   }, [input, streaming, sandboxId, onFilesChanged]);
 
+  const sentInitialPrompt = useRef(false);
+  useEffect(() => {
+    if (!initialPrompt || !sandboxId || sentInitialPrompt.current) return;
+    sentInitialPrompt.current = true;
+    sendMessage(initialPrompt);
+  }, [initialPrompt, sandboxId, sendMessage]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -297,28 +309,28 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
   return (
     <div
       className="flex flex-col h-full"
-      style={{ background: "#0d1424", borderLeft: "1px solid #1e2d45" }}
+      style={{ background: "#1d1b1f", borderLeft: "1px solid #30363d" }}
     >
       {/* Header */}
       <div
         className="flex items-center gap-2 px-4 py-3 shrink-0"
-        style={{ borderBottom: "1px solid #1e2d45" }}
+        style={{ borderBottom: "1px solid #30363d" }}
       >
         <div
           className="w-6 h-6 rounded flex items-center justify-center text-sm"
           style={{
             background:
-              "linear-gradient(135deg, rgba(34,211,238,0.2), rgba(8,145,178,0.1))",
-            border: "1px solid rgba(34,211,238,0.3)",
+              "linear-gradient(135deg, rgba(215,186,255,0.2), rgba(73,49,108,0.1))",
+            border: "1px solid rgba(215,186,255,0.3)",
           }}
         >
           ✦
         </div>
         <div>
-          <h2 className="text-sm font-semibold" style={{ color: "#e2e8f0" }}>
+          <h2 className="text-sm font-semibold" style={{ color: "#e7e1e7" }}>
             AI Assistant
           </h2>
-          <p className="text-xs" style={{ color: "#475569" }}>
+          <p className="text-xs" style={{ color: "#958e9a" }}>
             Powered by Gemini
           </p>
         </div>
@@ -327,7 +339,7 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
             className="w-1.5 h-1.5 rounded-full"
             style={{ background: "#10b981", boxShadow: "0 0 6px #10b981" }}
           />
-          <span className="text-xs" style={{ color: "#475569" }}>
+          <span className="text-xs" style={{ color: "#958e9a" }}>
             Active
           </span>
         </div>
@@ -343,8 +355,8 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
                   className="w-7 h-7 rounded-lg shrink-0 mr-2 flex items-center justify-center text-sm"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(34,211,238,0.2), rgba(8,145,178,0.1))",
-                    border: "1px solid rgba(34,211,238,0.3)",
+                      "linear-gradient(135deg, rgba(215,186,255,0.2), rgba(73,49,108,0.1))",
+                    border: "1px solid rgba(215,186,255,0.3)",
                     marginTop: "2px",
                   }}
                 >
@@ -354,7 +366,7 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
                   className="rounded-xl overflow-hidden"
                   style={{
                     background: "rgba(255,255,255,0.04)",
-                    border: "1px solid #1e2d45",
+                    border: "1px solid #30363d",
                   }}
                 >
                   <TypingIndicator />
@@ -374,19 +386,19 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
       {/* Input */}
       <div
         className="shrink-0 px-3 pb-3 pt-2"
-        style={{ borderTop: "1px solid #1e2d45" }}
+        style={{ borderTop: "1px solid #30363d" }}
       >
         <div
           className="flex items-end gap-2 rounded-xl p-2"
           style={{
-            background: "#070b14",
-            border: "1px solid #1e2d45",
+            background: "#151317",
+            border: "1px solid #30363d",
             transition: "border-color 0.2s",
           }}
           onFocusCapture={(e) =>
-            (e.currentTarget.style.borderColor = "rgba(34,211,238,0.4)")
+            (e.currentTarget.style.borderColor = "rgba(215,186,255,0.4)")
           }
-          onBlurCapture={(e) => (e.currentTarget.style.borderColor = "#1e2d45")}
+          onBlurCapture={(e) => (e.currentTarget.style.borderColor = "#30363d")}
         >
           <textarea
             ref={textareaRef}
@@ -404,8 +416,8 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
             rows={1}
             className="flex-1 resize-none text-sm outline-none bg-transparent"
             style={{
-              color: "#e2e8f0",
-              caretColor: "#22d3ee",
+              color: "#e7e1e7",
+              caretColor: "#d7baff",
               maxHeight: "120px",
               lineHeight: "1.5",
               fontFamily: "inherit",
@@ -417,19 +429,19 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
             }}
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!input.trim() || !sandboxId || streaming}
             className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer"
             style={{
               background:
                 input.trim() && sandboxId && !streaming
-                  ? "linear-gradient(135deg, #22d3ee, #0891b2)"
+                  ? "#d7baff"
                   : "rgba(255,255,255,0.06)",
               color:
-                input.trim() && sandboxId && !streaming ? "#070b14" : "#334155",
+                input.trim() && sandboxId && !streaming ? "#3c245e" : "#958e9a",
               boxShadow:
                 input.trim() && sandboxId && !streaming
-                  ? "0 0 15px rgba(34,211,238,0.3)"
+                  ? "0 0 15px rgba(215,186,255,0.3)"
                   : "none",
             }}
           >
@@ -437,7 +449,7 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
               <div
                 className="w-4 h-4 rounded-full border-2 border-t-transparent"
                 style={{
-                  borderColor: "#22d3ee",
+                  borderColor: "#d7baff",
                   borderTopColor: "transparent",
                   animation: "spin 0.8s linear infinite",
                 }}
@@ -457,7 +469,7 @@ export default function AiChat({ sandboxId, onFilesChanged }: AiChatProps) {
             )}
           </button>
         </div>
-        <p className="text-xs mt-1.5 text-center" style={{ color: "#334155" }}>
+        <p className="text-xs mt-1.5 text-center" style={{ color: "#958e9a" }}>
           Enter to send · Shift+Enter for newline
         </p>
       </div>

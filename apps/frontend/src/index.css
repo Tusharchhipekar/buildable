@@ -4,19 +4,19 @@
 
 @layer base {
   :root {
-    --bg-base: #070b14;
-    --bg-surface: #0d1424;
-    --bg-panel: #111827;
-    --bg-hover: #1a2436;
-    --border: #1e2d45;
-    --border-bright: #2a3f60;
-    --accent: #22d3ee;
-    --accent-dim: #0891b2;
-    --accent-glow: rgba(34, 211, 238, 0.15);
-    --accent-glow-bright: rgba(34, 211, 238, 0.3);
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #475569;
+    --bg-base: #151317;
+    --bg-surface: #1d1b1f;
+    --bg-panel: #211f23;
+    --bg-hover: #2c292d;
+    --border: #30363d;
+    --border-bright: #373438;
+    --accent: #d7baff;
+    --accent-dim: #49316c;
+    --accent-glow: rgba(215, 186, 255, 0.15);
+    --accent-glow-bright: rgba(215, 186, 255, 0.3);
+    --text-primary: #e7e1e7;
+    --text-secondary: #ccc4d0;
+    --text-muted: #958e9a;
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
@@ -38,7 +38,7 @@
   body {
     background: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 

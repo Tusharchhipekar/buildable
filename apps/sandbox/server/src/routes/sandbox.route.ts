@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createPod, deletePod } from "../kubernetes/pod.js";
 import { createService, deleteService } from "../kubernetes/service.js";
-import { createSandboxKey } from "../config/redis";
+import { createSandboxKey, redis } from "../config/redis";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { projectModel } from "@repo/mongodb";
 import type { Request, Response } from "express";
@@ -69,5 +69,36 @@ router.get("/project", authMiddleware, async (req, res) => {
     projects,
   });
 });
+
+router.delete(
+  "/project/:id",
+  authMiddleware,
+  async (req: Request, res: Response) => {
+    const projectId = req.params.id;
+    if (typeof projectId !== "string") {
+      return res.status(400).json({ message: "Invalid project id" });
+    }
+
+    const project = await projectModel.findOneAndDelete({
+      _id: projectId,
+      user: (req as any).user.id,
+    });
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ message: "Project not found or access denied" });
+    }
+
+    // Best-effort — the sandbox may not be running, that's fine.
+    await Promise.allSettled([
+      deletePod(projectId),
+      deleteService(projectId),
+      redis.del(`sandbox:${projectId}`),
+    ]);
+
+    return res.status(200).json({ message: "Project deleted successfully" });
+  },
+);
 
 export default router;

@@ -47,8 +47,8 @@ export default function TopBar({
       className="flex items-center justify-between px-4 shrink-0"
       style={{
         height: "48px",
-        background: "rgba(13,20,36,0.95)",
-        borderBottom: "1px solid #1e2d45",
+        background: "rgba(29,27,31,0.95)",
+        borderBottom: "1px solid #30363d",
         backdropFilter: "blur(12px)",
       }}
     >
@@ -59,18 +59,18 @@ export default function TopBar({
             className="w-6 h-6 rounded flex items-center justify-center"
             style={{
               background:
-                "linear-gradient(135deg, rgba(34,211,238,0.2), rgba(8,145,178,0.1))",
-              border: "1px solid rgba(34,211,238,0.3)",
+                "linear-gradient(135deg, rgba(215,186,255,0.2), rgba(73,49,108,0.1))",
+              border: "1px solid rgba(215,186,255,0.3)",
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="#22d3ee">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="#d7baff">
               <rect x="1" y="1" width="6" height="6" rx="1" />
               <rect x="9" y="1" width="6" height="6" rx="1" opacity="0.5" />
               <rect x="1" y="9" width="6" height="6" rx="1" opacity="0.5" />
               <rect x="9" y="9" width="6" height="6" rx="1" />
             </svg>
           </div>
-          <span className="text-sm font-semibold" style={{ color: "#e2e8f0" }}>
+          <span className="text-sm font-semibold" style={{ color: "#e7e1e7" }}>
             Sandbox IDE
           </span>
         </div>
@@ -79,15 +79,15 @@ export default function TopBar({
           <div
             className="flex items-center gap-2 px-2 py-0.5 rounded"
             style={{
-              background: "rgba(34,211,238,0.06)",
-              border: "1px solid rgba(34,211,238,0.15)",
+              background: "rgba(215,186,255,0.06)",
+              border: "1px solid rgba(215,186,255,0.15)",
             }}
           >
             <div
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
             />
-            <span className="text-xs font-mono" style={{ color: "#64748b" }}>
+            <span className="text-xs font-mono" style={{ color: "#958e9a" }}>
               {shortId}
             </span>
           </div>
@@ -97,7 +97,7 @@ export default function TopBar({
       {/* Center — Tab switcher */}
       <div
         className="flex items-center gap-1 p-1 rounded-lg"
-        style={{ background: "#0a0f1e", border: "1px solid #1e2d45" }}
+        style={{ background: "#1d1b1f", border: "1px solid #30363d" }}
       >
         {TABS.map((tab) => (
           <button
@@ -108,12 +108,12 @@ export default function TopBar({
               activeTab === tab.id
                 ? {
                     background:
-                      "linear-gradient(135deg, rgba(34,211,238,0.15), rgba(8,145,178,0.08))",
-                    color: "#22d3ee",
-                    border: "1px solid rgba(34,211,238,0.3)",
+                      "linear-gradient(135deg, rgba(215,186,255,0.15), rgba(73,49,108,0.08))",
+                    color: "#d7baff",
+                    border: "1px solid rgba(215,186,255,0.3)",
                   }
                 : {
-                    color: "#475569",
+                    color: "#958e9a",
                     border: "1px solid transparent",
                   }
             }

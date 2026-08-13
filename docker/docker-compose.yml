@@ -60,19 +60,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID:?AUTH_GOOGLE_CLIENT_ID is required}
       GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET:?AUTH_GOOGLE_CLIENT_SECRET is required}
-      # nginx here is on 8080, not 80 (see nginx service comment) — the
-      # relative default callbackURL would otherwise resolve against
-      # whatever Host header the request arrives with and land on the
-      # wrong port. Must also be registered as an authorized redirect URI
-      # in Google Cloud Console for this OAuth client.
       GOOGLE_CALLBACK_URL: "http://127.0.0.1:8080/api/auth/google/callback"
-      # Google's redirect after consent lands the browser directly on
-      # GOOGLE_CALLBACK_URL's host (127.0.0.1), bypassing the SPA/vite
-      # entirely. If this pointed at "localhost:5173" instead, the
-      # just-set auth cookie (scoped to 127.0.0.1) would be invisible once
-      # redirected there — different hosts don't share cookies even when
-      # they resolve to the same machine. Access the app via 127.0.0.1:5173
-      # (not localhost:5173) for this to work.
       FRONTEND_URL: "http://127.0.0.1:5173"
       RABBITMQ_URL: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672"
     ports:
@@ -130,6 +118,12 @@ services:
       AWS_REGION: "unused"
       AWS_ACCESS_KEY_ID: "unused"
       AWS_SECRET_ACCESS_KEY: "unused"
+      KUBECONFIG: /root/.kube/config
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
+    volumes:
+      - ./.kube/config:/root/.kube/config:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "3003:3000"
     depends_on:
