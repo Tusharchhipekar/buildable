@@ -16,7 +16,8 @@ interface Project {
 }
 
 interface SandboxData {
-  [key: string]: unknown;
+  sandboxId: string;
+  previewUrl: string;
 }
 
 interface DashboardProps {
