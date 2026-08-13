@@ -71,8 +71,8 @@ spec:
           - name: NOTIFICATION_PORT
             valueFrom:
               secretKeyRef:
-                name: notification-port
-                key: PORT
+                name: port
+                key: NOTIFICATION_PORT
 
         ports:
         - containerPort:  4000

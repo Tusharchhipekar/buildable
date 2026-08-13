@@ -83,6 +83,17 @@ export async function createPod(sandboxId: string, projectId: any) {
               mountPath: "/workspace",
             },
           ],
+          env: [
+            {
+              name: "AGENT_PORT",
+              valueFrom: {
+                secretKeyRef: {
+                  name: "port",
+                  key: "AGENT_PORT",
+                },
+              },
+            },
+          ],
         },
         {
           image: "sync-agent",

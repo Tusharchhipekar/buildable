@@ -40,6 +40,15 @@ router.post("/start", authMiddleware, async (req, res) => {
 
   const sandboxId = projectId;
 
+  const existing = await redis.get(`sandbox:${sandboxId}`);
+  if (existing) {
+    return res.status(200).json({
+      message: "Sandbox environment already running",
+      sandboxId,
+      previewUrl: `http://${sandboxId}.preview.localhost`,
+    });
+  }
+
   try {
     await Promise.all([
       createPod(sandboxId, projectId),
