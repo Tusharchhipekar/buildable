@@ -6,6 +6,7 @@ import agentRouter from "./router/agent.routes";
 import { authMiddleware } from "./middleware/auth.middleware";
 
 export const app = express();
+app.set("etag", false);
 
 app.use(morgan("dev"));
 app.use(express.json());

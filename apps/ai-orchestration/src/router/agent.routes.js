@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { agent } from "../agent/code.agent";
+import { callWithRateLimit } from "../agent/rateLimiter";
 
 const agentRouter = Router();
 
@@ -14,7 +15,7 @@ agentRouter.post("/invoke", async (req, res) => {
 
   const writer = (text) => res.write(text);
 
-  try {
+  async function runAgentStream() {
     const stream = await agent.stream(
       { messages: [{ role: "user", content: message }] },
       { context: { projectId, writer }, streamMode: "values" },
@@ -24,6 +25,11 @@ agentRouter.post("/invoke", async (req, res) => {
     for await (const state of stream) {
       lastState = state;
     }
+    return lastState;
+  }
+
+  try {
+    const lastState = await callWithRateLimit(runAgentStream);
 
     if (lastState?.messages?.length) {
       const msgs = lastState.messages;

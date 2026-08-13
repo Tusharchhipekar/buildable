@@ -12,6 +12,7 @@ import { authRouter } from "./routes/auth.route";
 import cors from "cors";
 
 const app = express();
+app.set("etag", false);
 
 app.use(morgan("dev"));
 app.use(express.json());

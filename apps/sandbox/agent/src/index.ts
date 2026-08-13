@@ -9,7 +9,11 @@ import pty from "node-pty";
 import os from "os";
 import cors from "cors";
 
-const WORKSPACE_DIR = "/workspace";
+// The initContainer seeds the whole monorepo into /workspace, but the
+// vite app that actually runs (@repo/sandbox-template) lives nested at
+// apps/sandbox/template — that's the real project root the file API and
+// terminal should operate on, not the volume root.
+const WORKSPACE_DIR = "/workspace/apps/sandbox/template";
 export const app = express();
 
 app.use(morgan("dev"));
@@ -44,7 +48,7 @@ const ptyProcess = pty.spawn(shell, [], {
   name: "xterm-color",
   cols: 80,
   rows: 30,
-  cwd: "/workspace",
+  cwd: WORKSPACE_DIR,
   env: process.env,
 });
 

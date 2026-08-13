@@ -41,15 +41,17 @@ spec:
             cpu: "500m"
             memory: "512Mi"
         livenessProbe:
-          exec:
-            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+          tcpSocket:
+            port: 27017
           initialDelaySeconds: 30
-          timeoutSeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
-          exec:
-            command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+          tcpSocket:
+            port: 27017
           initialDelaySeconds: 10
-          timeoutSeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
         env:
           - name: MONGO_INITDB_ROOT_USERNAME
             valueFrom:

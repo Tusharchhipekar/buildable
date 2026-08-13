@@ -30,6 +30,7 @@ interface TopBarProps {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
   status?: Status;
+  onBack?: () => void;
 }
 
 export default function TopBar({
@@ -37,6 +38,7 @@ export default function TopBar({
   activeTab,
   onTabChange,
   status,
+  onBack,
 }: TopBarProps) {
   const shortId = sandboxId ? sandboxId.slice(0, 8) + "…" : "";
 
@@ -52,8 +54,32 @@ export default function TopBar({
         backdropFilter: "blur(12px)",
       }}
     >
-      {/* Left — Logo + sandbox ID */}
+      {/* Left — Back + Logo + sandbox ID */}
       <div className="flex items-center gap-3">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            title="Back to projects"
+            className="flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors"
+            style={{ color: "#958e9a" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#e7e1e7")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#958e9a")}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back
+          </button>
+        )}
         <div className="flex items-center gap-2">
           <div
             className="w-6 h-6 rounded flex items-center justify-center"

@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { config } from "./config/config";
 import sandboxRouter from "./routes/sandbox.route";
 export const app = express();
+app.set("etag", false);
 
 app.use(morgan("dev"));
 app.use(express.json());

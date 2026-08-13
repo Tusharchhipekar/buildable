@@ -93,6 +93,13 @@ export default function App() {
     setFileRefreshKey((k) => k + 1);
   }, []);
 
+  const handleBackToProjects = useCallback(() => {
+    setSandbox(null);
+    setInitialPrompt(null);
+    setActiveFile(null);
+    setActiveTab("preview");
+  }, []);
+
   const handleFileSelect = useCallback((path: string) => {
     setActiveFile(path);
     setActiveTab("files");
@@ -159,6 +166,7 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         status={status}
+        onBack={handleBackToProjects}
       />
 
       {/* Main layout */}

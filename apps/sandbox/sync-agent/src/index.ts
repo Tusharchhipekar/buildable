@@ -111,9 +111,11 @@ function startWatcher(hasFiles: boolean): void {
 }
 
 async function init(): Promise<void> {
+  let hasFiles = false;
+
   try {
     const s3Objects: S3Object[] = await checkS3ForFiles();
-    const hasFiles: boolean = s3Objects.length > 0;
+    hasFiles = s3Objects.length > 0;
 
     if (hasFiles) {
       await downloadFilesFromS3(s3Objects);
@@ -122,11 +124,19 @@ async function init(): Promise<void> {
         "No files found in S3. Local files will be synced to S3 automatically.",
       );
     }
-
-    startWatcher(hasFiles);
   } catch (error) {
-    console.error("Error during initialization:", error);
+    console.error(
+      "Error checking/downloading from S3, will retry on file changes:",
+      error,
+    );
   }
+
+  // Start watching regardless of the initial S3 check outcome — an
+  // unreachable/misconfigured bucket shouldn't take down the whole
+  // container (it also runs the terminal/file-explorer sidecar's Pod
+  // readiness down with it). Individual upload failures are already
+  // caught per-file in uploadFileToS3.
+  startWatcher(hasFiles);
 }
 
 init();
