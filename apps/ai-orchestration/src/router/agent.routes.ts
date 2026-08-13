@@ -1,10 +1,11 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
+import { AIMessage } from "@langchain/core/messages";
 import { agent } from "../agent/code.agent";
 import { callWithRateLimit } from "../agent/rateLimiter";
 
 const agentRouter = Router();
 
-agentRouter.post("/invoke", async (req, res) => {
+agentRouter.post("/invoke", async (req: Request, res: Response) => {
   const { message, projectId } = req.body;
 
   res.writeHead(200, {
@@ -13,12 +14,10 @@ agentRouter.post("/invoke", async (req, res) => {
     Connection: "keep-alive",
   });
 
-  const writer = (text) => res.write(text);
-
   async function runAgentStream() {
     const stream = await agent.stream(
       { messages: [{ role: "user", content: message }] },
-      { context: { projectId, writer }, streamMode: "values" },
+      { context: { projectId }, streamMode: "values" },
     );
 
     let lastState = null;
@@ -35,8 +34,11 @@ agentRouter.post("/invoke", async (req, res) => {
       const msgs = lastState.messages;
       for (let i = msgs.length - 1; i >= 0; i--) {
         const m = msgs[i];
-        const role = m.role ?? m._getType?.();
-        if ((role === "ai" || role === "assistant") && !m.tool_calls?.length) {
+        if (
+          m instanceof AIMessage &&
+          m.getType() === "ai" &&
+          !m.tool_calls?.length
+        ) {
           const content =
             typeof m.content === "string"
               ? m.content
