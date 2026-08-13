@@ -13,20 +13,17 @@ export default defineConfig({
       clientPort: 5173,
     },
     proxy: {
-      // REST API — forwarded to the backend/ingress
-      "/api": {
-        target: "http://127.0.0.1:80",
+      // REST API — routed by path, standing in for nginx's location blocks
+      // when running services directly instead of via docker/nginx.
+      "/api/auth": {
+        target: "http://127.0.0.1:3000",
         changeOrigin: true,
         secure: false,
-        configure: (proxy) => {
-          proxy.on("error", (err) => console.log("proxy error", err));
-          proxy.on("proxyReq", (_, req) =>
-            console.log("proxying:", req.method, req.url),
-          );
-          proxy.on("proxyRes", (res, req) =>
-            console.log("got response:", res.statusCode, req.url),
-          );
-        },
+      },
+      "/api/ai": {
+        target: "http://127.0.0.1:3002",
+        changeOrigin: true,
+        secure: false,
       },
     },
   },

@@ -59,6 +59,26 @@ export default function SignIn({ onAuthenticated }: SignInProps) {
     window.location.href = "/api/auth/google";
   };
 
+  const handleDemo = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/auth/demo", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `Request failed (${res.status})`);
+      }
+      onAuthenticated(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div
       className="relative flex flex-col items-center justify-center h-full w-full overflow-hidden px-4 py-6"
@@ -143,12 +163,20 @@ export default function SignIn({ onAuthenticated }: SignInProps) {
             </button>
             <button
               type="button"
-              disabled
-              title="Coming soon"
-              className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] opacity-50 cursor-not-allowed"
+              onClick={handleDemo}
+              disabled={loading}
+              className="w-full h-14 flex items-center justify-center gap-3 rounded-[1.5rem] transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               style={{ background: "#e7e1e7", color: "#0f0d11" }}
+              onMouseEnter={(e) =>
+                !loading && (e.currentTarget.style.background = "#d5cfd5")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "#e7e1e7")
+              }
             >
-              <span className="text-sm font-medium">Demo login</span>
+              <span className="text-sm font-medium">
+                {loading ? "Signing in…" : "Demo login"}
+              </span>
             </button>
           </div>
 

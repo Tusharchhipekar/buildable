@@ -126,6 +126,40 @@ authRouter.post(
   },
 );
 
+const DEMO_EMAIL = "demo@buildable.dev";
+
+authRouter.post(
+  "/demo",
+  async (
+    req: Request,
+    res: Response<AuthResponseBody | ErrorResponseBody>,
+  ) => {
+    try {
+      let user = await userModel.findOne({ email: DEMO_EMAIL });
+      if (!user) {
+        user = new userModel({
+          email: DEMO_EMAIL,
+          name: "Demo User",
+        });
+        await user.save();
+      }
+
+      const token = signToken(user._id.toString());
+      res.cookie("token", token, COOKIE_OPTIONS);
+
+      res.status(200).json({
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+      });
+    } catch (err) {
+      console.error("Error during demo login:", err);
+      res.status(500).json({ error: "Demo login failed" });
+    }
+  },
+);
+
 authRouter.get(
   "/me",
   authMiddleware,
