@@ -1,0 +1,37 @@
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+# Prune the monorepo down to the three core services deployed together as
+# one Railway service (auth, ai-orchestration, notification) + the
+# workspace packages they depend on.
+FROM base AS pruner
+COPY . .
+RUN bunx turbo prune @repo/auth @repo/ai-orchestration @repo/notification --docker
+
+# Install deps from the pruned lockfile/package.jsons only — cached across
+# builds unless a dependency actually changes.
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
+RUN bun install --frozen-lockfile
+
+FROM base AS runtime
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Bun nests some deps under each workspace's own node_modules rather than
+# hoisting all of them to the root, so copy the installer's output first,
+# then overlay the real source on top.
+COPY --from=installer /app ./
+COPY --from=pruner /app/out/full/ .
+
+COPY railway/nginx.conf /etc/nginx/nginx.conf
+COPY railway/start.sh /app/railway-start.sh
+RUN chmod +x /app/railway-start.sh
+
+# nginx path-routes /api/auth and /api/ai to the two internal services on
+# this single public port; NOTIFICATION_PORT stays internal (RabbitMQ
+# consumer + health endpoints only, never called by the frontend).
+EXPOSE 8080
+
+CMD ["/app/railway-start.sh"]
